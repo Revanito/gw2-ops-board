@@ -31,9 +31,14 @@ log = logging.getLogger("gw2-ops-board")
 CONFIG_DIR = Path(__file__).parent
 
 public_cache: dict = {
-    "gemstore_favorites": [], "watchlist": [], "updated_at": None,
+    "gemstore_favorites": [], "gemstore_promotions": [], "watchlist": [], "updated_at": None,
     "items_to_flip": [], "flip_updated_at": None,
 }
+
+# thatshaman's own rotating single-item promotional showcase - independent
+# of favorites.json, shown as "what's newly on sale" regardless of whether
+# it happens to be on anyone's personal wishlist.
+PROMOTIONS_CATEGORY = "New Items"
 
 
 def _load_json_list(path: Path, key: str) -> list:
@@ -48,10 +53,16 @@ async def refresh_public_data() -> None:
     try:
         favorite_names = _load_json_list(CONFIG_DIR / "favorites.json", "items")
         active = await gemstore_client.fetch_gemstore_schedule()
+
         matches = gemstore_client.match_favorites(active, favorite_names)
         for entry in matches:
             entry["price"] = await wiki_client.fetch_gem_price(entry["name"])
         public_cache["gemstore_favorites"] = matches
+
+        promotions = gemstore_client.filter_by_category(active, PROMOTIONS_CATEGORY)
+        for entry in promotions:
+            entry["price"] = await wiki_client.fetch_gem_price(entry["name"])
+        public_cache["gemstore_promotions"] = promotions
     except Exception:
         log.exception("gemstore refresh failed")
 
@@ -188,6 +199,7 @@ def market(request: Request):
         "request": request,
         "user": current_user(request),
         "gemstore_favorites": public_cache["gemstore_favorites"],
+        "gemstore_promotions": public_cache["gemstore_promotions"],
         "watchlist": public_cache["watchlist"],
         "items_to_flip": public_cache["items_to_flip"],
         "updated_at": public_cache["updated_at"],

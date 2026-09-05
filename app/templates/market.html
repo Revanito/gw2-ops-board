@@ -63,6 +63,24 @@
       {% else %}
         <p class="dim">None of your favorites (favorites.json) are on sale right now.</p>
       {% endif %}
+
+      <h2 style="margin-top:28px">Gemstore Promotions</h2>
+      <p class="section-sub">thatshaman's own "New Items" rotation &mdash; newly featured items, regardless of your favorites list:</p>
+      {% if gemstore_promotions %}
+      <div class="gem-list">
+        {% for item in gemstore_promotions %}
+        <a class="gem-item" href="{{ item.wiki_url }}" target="_blank" rel="noopener">
+          {% if item.icon %}<img src="{{ item.icon }}" alt="">{% endif %}
+          <div class="gi-text">
+            <div class="gi-name">{{ item.name }}</div>
+            <div class="gi-desc">{{ item.price or "?" }} · {{ "always available" if item.indefinite else "until " + item.end[:10] }}</div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      {% else %}
+        <p class="dim">No promotional items are featured right now.</p>
+      {% endif %}
     </aside>
 
     <div class="market-main">

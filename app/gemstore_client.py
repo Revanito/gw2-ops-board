@@ -32,13 +32,14 @@ def _wiki_url(name: str) -> str:
 
 async def fetch_gemstore_schedule() -> list[dict]:
     """Returns every schedule entry currently on sale/available, each as
-    {"name", "icon", "wiki_url", "start", "end", "indefinite"}."""
+    {"name", "icon", "wiki_url", "start", "end", "indefinite", "category_name"}."""
     async with httpx.AsyncClient(timeout=20) as client:
         resp = await client.get(GEMSTORE_JSON_URL)
         resp.raise_for_status()
         data = resp.json()
 
     items = data.get("items", {})
+    categories = data.get("categories", {})
     now = datetime.now(timezone.utc)
 
     active = []
@@ -56,6 +57,7 @@ async def fetch_gemstore_schedule() -> list[dict]:
         if start > now or (not indefinite and end < now):
             continue  # not on sale yet, or already ended
 
+        category = categories.get(entry.get("category"), {})
         active.append({
             "name": item["name"],
             "icon": ICON_BASE + item["image"] + "_large.png" if item.get("image") else None,
@@ -63,6 +65,7 @@ async def fetch_gemstore_schedule() -> list[dict]:
             "start": start.isoformat(),
             "end": None if indefinite else end.isoformat(),
             "indefinite": indefinite,
+            "category_name": category.get("name", ""),
         })
 
     active.sort(key=lambda e: e["name"].lower())
@@ -75,3 +78,11 @@ def match_favorites(active_schedule: list[dict], favorites: list[str]) -> list[d
     match on name), returning just the matches."""
     wanted = {name.lower() for name in favorites}
     return [entry for entry in active_schedule if entry["name"].lower() in wanted]
+
+
+def filter_by_category(active_schedule: list[dict], category_name: str) -> list[dict]:
+    """Everything currently active in one thatshaman category, independent
+    of the personal favorites list - used for the "New Items" promotional
+    rotation (their own featured-item showcase, distinct from the ~45-item
+    "Seasonal Swap" bulk sales bundle)."""
+    return [entry for entry in active_schedule if entry["category_name"] == category_name]
