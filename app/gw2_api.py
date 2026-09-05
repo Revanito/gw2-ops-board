@@ -12,7 +12,7 @@ from urllib.parse import quote
 import httpx
 
 BASE = "https://api.guildwars2.com/v2"
-REQUIRED_SCOPES = {"account", "wallet", "progression", "unlocks", "characters"}
+REQUIRED_SCOPES = {"account", "wallet", "progression", "unlocks", "characters", "builds"}
 
 _client = httpx.AsyncClient(base_url=BASE, timeout=20)
 
@@ -136,10 +136,14 @@ async def _fetch_character_detail(name: str, api_key: str) -> tuple[dict, int | 
         _client.get(f"/characters/{encoded}/crafting", headers=headers),
     )
     core_resp.raise_for_status()
-    spec_resp.raise_for_status()
     crafting_resp.raise_for_status()
 
-    pve_specs = spec_resp.json().get("pve", [])
+    # /specializations needs the separate "builds" permission scope (not
+    # covered by "characters", which only gates core/crafting/equipment/
+    # inventory) - a key missing it gets a 403 here specifically. Treated as
+    # "no elite spec to show" rather than failing the whole character, so an
+    # older key without "builds" still shows everything else.
+    pve_specs = spec_resp.json().get("pve", []) if spec_resp.status_code == 200 else []
     # The 3rd PvE specialization slot is conventionally the elite spec.
     elite_id = pve_specs[2]["id"] if len(pve_specs) > 2 and pve_specs[2] else None
     crafting = [d for d in crafting_resp.json() if d.get("active")]

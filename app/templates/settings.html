@@ -12,10 +12,11 @@
     <p class="hint">
       Create a key at
       <a href="https://account.arena.net/applications" target="_blank" rel="noopener">account.arena.net/applications</a>
-      with exactly these permissions checked: <strong>account, wallet, progression, unlocks, characters</strong>.
+      with exactly these permissions checked: <strong>account, wallet, progression, unlocks, characters, builds</strong>.
       Nothing else is needed, and the GW2 API is read-only end to end &mdash; it has no endpoint
       that can move items, spend currency, or otherwise act on your account, so this key can only
-      let this site <em>display</em> your account info (including your character list), never touch it.
+      let this site <em>display</em> your account info (including your character list and current
+      builds), never touch it.
     </p>
 
     {% if user["encrypted_api_key"] %}
