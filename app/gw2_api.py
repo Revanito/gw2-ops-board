@@ -174,11 +174,18 @@ async def _fetch_character_detail(name: str, api_key: str) -> tuple[dict, int | 
         # with any actual progress, not just the 2 a character currently has
         # equipped ("active") - trained-but-parked disciplines still count
         # as "a job this character knows" for display purposes.
+        #
+        # Response is wrapped as {"crafting": [...]}, not a bare list - the
+        # same "wrapped under the endpoint's own name" shape as
+        # /specializations above. This is also what caused the original
+        # crash: iterating a dict directly yields its *keys* (strings), not
+        # its values, hence 'str' object has no attribute 'get'.
         crafting = []
         if crafting_resp.status_code == 200:
             crafting_json = crafting_resp.json()
-            if isinstance(crafting_json, list):
-                crafting = [d for d in crafting_json if isinstance(d, dict) and d.get("rating", 0) > 0]
+            crafting_list = crafting_json.get("crafting", crafting_json) if isinstance(crafting_json, dict) else crafting_json
+            if isinstance(crafting_list, list):
+                crafting = [d for d in crafting_list if isinstance(d, dict) and d.get("rating", 0) > 0]
 
         return core_resp.json(), elite_id, crafting
     except Exception:
