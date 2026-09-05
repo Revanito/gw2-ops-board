@@ -14,9 +14,12 @@
 <section>
   <h2>Wallet</h2>
   {% if wallet %}
-    {% set headline_ids = [1, 2, 3] %}
-    {% set headline = wallet | selectattr('id', 'in', headline_ids) | list %}
-    {% set rest = wallet | rejectattr('id', 'in', headline_ids) | list %}
+    {% set headline_order = [1, 2, 3, 4] %} {# Gold, Karma, Laurel, Gem - a fixed display order, not GW2's own internal currency ordering (which would put Gem first) #}
+    {% set wallet_by_id = {} %}
+    {% for c in wallet %}{% set _ = wallet_by_id.update({c.id: c}) %}{% endfor %}
+    {% set headline = [] %}
+    {% for hid in headline_order %}{% if hid in wallet_by_id %}{% set _ = headline.append(wallet_by_id[hid]) %}{% endif %}{% endfor %}
+    {% set rest = wallet | rejectattr('id', 'in', headline_order) | list %}
     {% if headline %}
     <div class="wallet-headline">
       {% for c in headline %}
