@@ -142,6 +142,20 @@ td.dim { color: var(--text-dim); }
   .market-sidebar { width: 100%; }
 }
 
+/* --- Dashboard layout: same sidebar + main pattern as Market --- */
+.dash-bleed {
+  width: 100vw; margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw);
+  padding: 0 24px; box-sizing: border-box;
+}
+.dash-layout { max-width: 1360px; margin: 0 auto; display: flex; gap: 28px; align-items: flex-start; }
+.dash-sidebar { width: 320px; flex-shrink: 0; }
+.dash-main { flex: 1; min-width: 0; }
+
+@media (max-width: 860px) {
+  .dash-layout { flex-direction: column; }
+  .dash-sidebar { width: 100%; }
+}
+
 /* --- Boss/meta timeline (Gantt-style, lebusmagique-inspired) --- */
 .timeline-header {
   width: 100vw; margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw);

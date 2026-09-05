@@ -2,107 +2,113 @@
 {% block title %}Dashboard — GW2 Ops Board{% endblock %}
 {% block content %}
 
-<section>
-  <h2>Account</h2>
-  {% if account %}
-    <p>{{ account.name }} &middot; created {{ account.created[:10] }}</p>
-  {% else %}
-    <p class="dim">Couldn't load account info right now &mdash; try refreshing in a bit.</p>
-  {% endif %}
-</section>
-
-<section>
-  <h2>Wallet</h2>
-  {% if wallet %}
-    {% set headline_order = [1, 2, 3, 4] %} {# Gold, Karma, Laurel, Gem - a fixed display order, not GW2's own internal currency ordering (which would put Gem first) #}
-    {% set wallet_by_id = {} %}
-    {% for c in wallet %}{% set _ = wallet_by_id.update({c.id: c}) %}{% endfor %}
-    {% set headline = [] %}
-    {% for hid in headline_order %}{% if hid in wallet_by_id %}{% set _ = headline.append(wallet_by_id[hid]) %}{% endif %}{% endfor %}
-    {% set rest = wallet | rejectattr('id', 'in', headline_order) | list %}
-    {% if headline %}
-    <div class="wallet-headline">
-      {% for c in headline %}
-      <div class="wh-item">
-        {% if c.icon %}<img src="{{ c.icon }}" alt="">{% endif %}
-        <div>
-          <div class="wh-value{{ ' mono' if c.id == 1 else '' }}">
-            {{ c.value | coins if c.id == 1 else "{:,}".format(c.value) }}
+<div class="dash-bleed">
+  <div class="dash-layout">
+    <aside class="dash-sidebar">
+      <h2>Wizard's Vault — Today</h2>
+      <p class="section-sub">
+        Every daily objective ArenaNet has assigned your account today, with live progress read
+        straight from your account each time this page loads — so a checkmark here reflects what
+        you've actually completed in-game, not a cached snapshot. Reload after finishing an
+        objective to see it tick over.
+      </p>
+      {% if vault and vault.objectives %}
+        {% if vault.meta_progress_current is not none %}
+          <p class="hint">Meta progress: {{ vault.meta_progress_current }} / {{ vault.meta_progress_complete }}</p>
+        {% endif %}
+        <div class="panel">
+          {% for o in vault.objectives %}
+          <div class="objective{{ ' done' if o.done else '' }}">
+            {{ "✓" if o.done else "○" }} {{ o.title }}
+            <span class="dim">({{ o.track }}, {{ o.acclaim }} acclaim) — {{ o.progress_current }}/{{ o.progress_complete }}</span>
           </div>
-          <div class="wh-label">{{ "Gold" if c.id == 1 else c.name }}</div>
+          {% endfor %}
         </div>
-      </div>
-      {% endfor %}
-    </div>
-    {% endif %}
-    {% if rest %}
-    <div class="wallet-list">
-      {% for c in rest %}
-      <div class="wallet-row">
-        {% if c.icon %}<img src="{{ c.icon }}" alt="">{% endif %}
-        <span class="wr-name">{{ c.name }}</span>
-        <span class="wr-value mono">{{ "{:,}".format(c.value) }}</span>
-      </div>
-      {% endfor %}
-    </div>
-    {% endif %}
-  {% else %}
-    <p class="dim">Couldn't load wallet right now.</p>
-  {% endif %}
-</section>
+      {% else %}
+        <p class="dim">No Wizard's Vault data available right now.</p>
+      {% endif %}
+    </aside>
 
-<section>
-  <h2>Wizard's Vault — Today</h2>
-  <p class="section-sub">
-    Every daily objective ArenaNet has assigned your account today, with live progress read
-    straight from your account each time this page loads — so a checkmark here reflects what
-    you've actually completed in-game, not a cached snapshot. Reload after finishing an
-    objective to see it tick over.
-  </p>
-  {% if vault and vault.objectives %}
-    {% if vault.meta_progress_current is not none %}
-      <p class="hint">Meta progress: {{ vault.meta_progress_current }} / {{ vault.meta_progress_complete }}</p>
-    {% endif %}
-    <div class="panel">
-      {% for o in vault.objectives %}
-      <div class="objective{{ ' done' if o.done else '' }}">
-        {{ "✓" if o.done else "○" }} {{ o.title }}
-        <span class="dim">({{ o.track }}, {{ o.acclaim }} acclaim) — {{ o.progress_current }}/{{ o.progress_complete }}</span>
-      </div>
-      {% endfor %}
-    </div>
-  {% else %}
-    <p class="dim">No Wizard's Vault data available right now.</p>
-  {% endif %}
-</section>
+    <div class="dash-main">
+      <section>
+        <h2>Account</h2>
+        {% if account %}
+          <p>{{ account.name }} &middot; created {{ account.created[:10] }}</p>
+        {% else %}
+          <p class="dim">Couldn't load account info right now &mdash; try refreshing in a bit.</p>
+        {% endif %}
+      </section>
 
-<section>
-  <h2>Characters</h2>
-  {% if characters %}
-    <div class="character-grid">
-      {% for c in characters %}
-      <div class="character-card">
-        <div class="char-name">{{ c.name }}</div>
-        <div class="dim">{{ c.race }} {{ c.profession }}</div>
-        <div class="char-level">Level {{ c.level }}</div>
-        {% if c.specialization %}
-        <div class="char-spec">
-          {% if c.specialization_icon %}<img src="{{ c.specialization_icon }}" alt="">{% endif %}
-          <span>{{ c.specialization }}</span>
-        </div>
+      <section>
+        <h2>Wallet</h2>
+        {% if wallet %}
+          {% set headline_order = [1, 2, 3, 4] %} {# Gold, Karma, Laurel, Gem - a fixed display order, not GW2's own internal currency ordering (which would put Gem first) #}
+          {% set wallet_by_id = {} %}
+          {% for c in wallet %}{% set _ = wallet_by_id.update({c.id: c}) %}{% endfor %}
+          {% set headline = [] %}
+          {% for hid in headline_order %}{% if hid in wallet_by_id %}{% set _ = headline.append(wallet_by_id[hid]) %}{% endif %}{% endfor %}
+          {% set rest = wallet | rejectattr('id', 'in', headline_order) | list %}
+          {% if headline %}
+          <div class="wallet-headline">
+            {% for c in headline %}
+            <div class="wh-item">
+              {% if c.icon %}<img src="{{ c.icon }}" alt="">{% endif %}
+              <div>
+                <div class="wh-value{{ ' mono' if c.id == 1 else '' }}">
+                  {{ c.value | coins if c.id == 1 else "{:,}".format(c.value) }}
+                </div>
+                <div class="wh-label">{{ "Gold" if c.id == 1 else c.name }}</div>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+          {% if rest %}
+          <div class="wallet-list">
+            {% for c in rest %}
+            <div class="wallet-row">
+              {% if c.icon %}<img src="{{ c.icon }}" alt="">{% endif %}
+              <span class="wr-name">{{ c.name }}</span>
+              <span class="wr-value mono">{{ "{:,}".format(c.value) }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        {% else %}
+          <p class="dim">Couldn't load wallet right now.</p>
         {% endif %}
-        {% if c.crafting %}
-        <div class="char-crafting">
-          {% for d in c.crafting %}<span class="craft-badge">{{ d.discipline }} {{ d.rating }}</span>{% endfor %}
-        </div>
+      </section>
+
+      <section>
+        <h2>Characters</h2>
+        {% if characters %}
+          <div class="character-grid">
+            {% for c in characters %}
+            <div class="character-card">
+              <div class="char-name">{{ c.name }}</div>
+              <div class="dim">{{ c.race }} {{ c.profession }}</div>
+              <div class="char-level">Level {{ c.level }}</div>
+              {% if c.specialization %}
+              <div class="char-spec">
+                {% if c.specialization_icon %}<img src="{{ c.specialization_icon }}" alt="">{% endif %}
+                <span>{{ c.specialization }}</span>
+              </div>
+              {% endif %}
+              {% if c.crafting %}
+              <div class="char-crafting">
+                {% for d in c.crafting %}<span class="craft-badge">{{ d.discipline }} {{ d.rating }}</span>{% endfor %}
+              </div>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="dim">No character data available right now &mdash; if you added your key before this
+          feature shipped, remove and re-add it in Settings with the <strong>characters</strong> scope checked.</p>
         {% endif %}
-      </div>
-      {% endfor %}
+      </section>
     </div>
-  {% else %}
-    <p class="dim">No character data available right now &mdash; if you added your key before this
-    feature shipped, remove and re-add it in Settings with the <strong>characters</strong> scope checked.</p>
-  {% endif %}
-</section>
+  </div>
+</div>
 
 {% endblock %}
