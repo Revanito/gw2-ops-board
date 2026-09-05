@@ -151,13 +151,23 @@ async def _fetch_character_detail(name: str, api_key: str) -> tuple[dict, int | 
         # /specializations needs the separate "builds" permission scope (not
         # covered by "characters", which only gates core/crafting/equipment/
         # inventory) - a key missing it gets a 403 here specifically.
+        #
+        # The response shape is inconsistently documented - some sources say
+        # {"pve": [...], ...} flat, others say it's nested under a
+        # "specializations" wrapper key. Handling both rather than betting on
+        # one, since live testing showed 200 responses producing no data
+        # under the flat assumption.
         pve_specs = []
         if spec_resp.status_code == 200:
             spec_json = spec_resp.json()
             if isinstance(spec_json, dict):
-                pve_specs = spec_json.get("pve", [])
+                specs_block = spec_json.get("specializations", spec_json)
+                if isinstance(specs_block, dict):
+                    pve_specs = specs_block.get("pve", []) or []
         # The 3rd PvE specialization slot is conventionally the elite spec.
-        elite_id = pve_specs[2]["id"] if len(pve_specs) > 2 and pve_specs[2] else None
+        elite_id = None
+        if len(pve_specs) > 2 and isinstance(pve_specs[2], dict):
+            elite_id = pve_specs[2].get("id")
 
         crafting = []
         if crafting_resp.status_code == 200:
