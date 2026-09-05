@@ -6,10 +6,13 @@ items, spend currency, or otherwise act on an account, so a leaked read key
 can only expose information, never let someone act on the account.
 """
 import asyncio
+import logging
 import time
 from urllib.parse import quote
 
 import httpx
+
+log = logging.getLogger("gw2-ops-board.gw2_api")
 
 BASE = "https://api.guildwars2.com/v2"
 REQUIRED_SCOPES = {"account", "wallet", "progression", "unlocks", "characters", "builds", "inventories"}
@@ -122,32 +125,50 @@ async def fetch_wizards_vault_daily(api_key: str) -> dict | None:
     }
 
 
-async def _fetch_character_detail(name: str, api_key: str) -> tuple[dict, int | None, list[dict]]:
+async def _fetch_character_detail(name: str, api_key: str) -> tuple[dict, int | None, list[dict]] | None:
     """Character names routinely contain spaces/punctuation ("Ternowned
     Bladesworn"), so the name has to be percent-encoded before it can go into
     a URL path - passing it in raw silently breaks the request for most
     real accounts. The three per-character calls are independent, so they're
-    issued concurrently rather than one after another."""
+    issued concurrently rather than one after another.
+
+    Returns None if this one character's data couldn't be made sense of, so
+    the caller can skip it and still show everyone else - the GW2 API has
+    turned out to occasionally return unexpected shapes here (a 403 on
+    /specializations for keys missing "builds", and separately a bare string
+    instead of a list from /crafting for at least one real character), and a
+    single character's bad response shouldn't take down the whole list."""
     encoded = quote(name, safe="")
     headers = _auth_headers(api_key)
-    core_resp, spec_resp, crafting_resp = await asyncio.gather(
-        _client.get(f"/characters/{encoded}/core", headers=headers),
-        _client.get(f"/characters/{encoded}/specializations", headers=headers),
-        _client.get(f"/characters/{encoded}/crafting", headers=headers),
-    )
-    core_resp.raise_for_status()
-    crafting_resp.raise_for_status()
+    try:
+        core_resp, spec_resp, crafting_resp = await asyncio.gather(
+            _client.get(f"/characters/{encoded}/core", headers=headers),
+            _client.get(f"/characters/{encoded}/specializations", headers=headers),
+            _client.get(f"/characters/{encoded}/crafting", headers=headers),
+        )
+        core_resp.raise_for_status()
 
-    # /specializations needs the separate "builds" permission scope (not
-    # covered by "characters", which only gates core/crafting/equipment/
-    # inventory) - a key missing it gets a 403 here specifically. Treated as
-    # "no elite spec to show" rather than failing the whole character, so an
-    # older key without "builds" still shows everything else.
-    pve_specs = spec_resp.json().get("pve", []) if spec_resp.status_code == 200 else []
-    # The 3rd PvE specialization slot is conventionally the elite spec.
-    elite_id = pve_specs[2]["id"] if len(pve_specs) > 2 and pve_specs[2] else None
-    crafting = [d for d in crafting_resp.json() if d.get("active")]
-    return core_resp.json(), elite_id, crafting
+        # /specializations needs the separate "builds" permission scope (not
+        # covered by "characters", which only gates core/crafting/equipment/
+        # inventory) - a key missing it gets a 403 here specifically.
+        pve_specs = []
+        if spec_resp.status_code == 200:
+            spec_json = spec_resp.json()
+            if isinstance(spec_json, dict):
+                pve_specs = spec_json.get("pve", [])
+        # The 3rd PvE specialization slot is conventionally the elite spec.
+        elite_id = pve_specs[2]["id"] if len(pve_specs) > 2 and pve_specs[2] else None
+
+        crafting = []
+        if crafting_resp.status_code == 200:
+            crafting_json = crafting_resp.json()
+            if isinstance(crafting_json, list):
+                crafting = [d for d in crafting_json if isinstance(d, dict) and d.get("active")]
+
+        return core_resp.json(), elite_id, crafting
+    except Exception:
+        log.exception("couldn't fetch details for character %r", name)
+        return None
 
 
 async def fetch_characters(api_key: str) -> list[dict]:
@@ -165,7 +186,8 @@ async def fetch_characters(api_key: str) -> list[dict]:
     if not names:
         return []
 
-    results = await asyncio.gather(*(_fetch_character_detail(name, api_key) for name in names))
+    raw_results = await asyncio.gather(*(_fetch_character_detail(name, api_key) for name in names))
+    results = [r for r in raw_results if r is not None]
 
     elite_ids = sorted({elite_id for _, elite_id, _ in results if elite_id})
     spec_catalog = {}
