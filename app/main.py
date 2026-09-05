@@ -158,6 +158,17 @@ def current_user(request: Request):
     return get_user(user_id) if user_id else None
 
 
+async def _safe(coro, default, label, discord_id):
+    """Runs one GW2 API call, logging and falling back to `default` instead
+    of blowing up the whole page if that one call fails - used to fetch
+    several independent things concurrently via asyncio.gather()."""
+    try:
+        return await coro
+    except Exception:
+        log.exception("%s failed for %s", label, discord_id)
+        return default
+
+
 @app.get("/")
 def index(request: Request):
     return templates.TemplateResponse("index.html", {
@@ -266,24 +277,36 @@ async def dashboard(request: Request):
     if not api_key:
         return RedirectResponse("/settings?error=your saved key couldn't be read, please re-add it")
 
-    async def _safe(coro, default, label):
-        try:
-            return await coro
-        except Exception:
-            log.exception("%s failed for %s", label, user["discord_id"])
-            return default
-
     # Independent calls, run concurrently rather than one after another -
     # this was previously the main reason the dashboard felt like it hung,
     # especially fetch_characters() on accounts with several characters.
     account, wallet, vault, characters = await asyncio.gather(
-        _safe(gw2_api.fetch_account(api_key), None, "fetch_account"),
-        _safe(gw2_api.fetch_wallet(api_key), [], "fetch_wallet"),
-        _safe(gw2_api.fetch_wizards_vault_daily(api_key), None, "fetch_wizards_vault_daily"),
-        _safe(gw2_api.fetch_characters(api_key), [], "fetch_characters"),
+        _safe(gw2_api.fetch_account(api_key), None, "fetch_account", user["discord_id"]),
+        _safe(gw2_api.fetch_wallet(api_key), [], "fetch_wallet", user["discord_id"]),
+        _safe(gw2_api.fetch_wizards_vault_daily(api_key), None, "fetch_wizards_vault_daily", user["discord_id"]),
+        _safe(gw2_api.fetch_characters(api_key), [], "fetch_characters", user["discord_id"]),
     )
 
     return templates.TemplateResponse("dashboard.html", {
         "request": request, "user": user, "account": account, "wallet": wallet,
         "vault": vault, "characters": characters,
+    })
+
+
+@app.get("/materials")
+async def materials(request: Request):
+    user = current_user(request)
+    if not user:
+        return RedirectResponse("/login")
+    if not user["encrypted_api_key"]:
+        return RedirectResponse("/settings?error=add your GW2 API key first")
+
+    api_key = decrypt(user["encrypted_api_key"])
+    if not api_key:
+        return RedirectResponse("/settings?error=your saved key couldn't be read, please re-add it")
+
+    categories = await _safe(gw2_api.fetch_materials(api_key), [], "fetch_materials", user["discord_id"])
+
+    return templates.TemplateResponse("materials.html", {
+        "request": request, "user": user, "categories": categories,
     })

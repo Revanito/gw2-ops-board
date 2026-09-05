@@ -12,7 +12,7 @@ from urllib.parse import quote
 import httpx
 
 BASE = "https://api.guildwars2.com/v2"
-REQUIRED_SCOPES = {"account", "wallet", "progression", "unlocks", "characters", "builds"}
+REQUIRED_SCOPES = {"account", "wallet", "progression", "unlocks", "characters", "builds", "inventories"}
 
 _client = httpx.AsyncClient(base_url=BASE, timeout=20)
 
@@ -189,6 +189,51 @@ async def fetch_characters(api_key: str) -> list[dict]:
         })
     characters.sort(key=lambda c: c["level"], reverse=True)
     return characters
+
+
+async def fetch_materials(api_key: str) -> list[dict]:
+    """Material Storage contents, grouped and ordered the same way the
+    in-game Material Storage tab is (category order, then each category's
+    own canonical item order). Needs the "inventories" scope - separate from
+    "characters", same story as the "builds" scope for specializations.
+
+    The API always returns every material the game knows about, most with
+    count 0 (an account that's never held a given material still gets an
+    entry for it) - those are filtered out here rather than shown as a wall
+    of zeroes."""
+    resp = await _client.get("/account/materials", headers=_auth_headers(api_key))
+    resp.raise_for_status()
+    held = {m["id"]: m["count"] for m in resp.json() if m.get("count", 0) > 0}
+    if not held:
+        return []
+
+    # The GW2 API caps bulk ids= requests at 200 - a veteran account can
+    # easily hold 200+ distinct materials, so this can't be a single call.
+    ids = list(held)
+    items: dict[int, dict] = {}
+    for i in range(0, len(ids), 200):
+        items.update(await fetch_items(ids[i:i + 200]))
+    categories = await _get_ref("/materials?ids=all", ttl=86400)
+
+    result = []
+    for cat in sorted(categories, key=lambda c: c["order"]):
+        item_order = {iid: i for i, iid in enumerate(cat["items"])}
+        cat_items = []
+        for item_id in cat["items"]:
+            if item_id not in held:
+                continue
+            info = items.get(item_id, {})
+            cat_items.append({
+                "id": item_id,
+                "name": info.get("name", f"Item {item_id}"),
+                "icon": info.get("icon"),
+                "count": held[item_id],
+            })
+        if cat_items:
+            cat_items.sort(key=lambda i: item_order[i["id"]])
+            result.append({"category": cat["name"], "materials": cat_items})
+
+    return result
 
 
 async def fetch_worldbosses_looted_today(api_key: str) -> set[str]:

@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Material Storage — GW2 Ops Board{% endblock %}
+{% block content %}
+
+<section>
+  <h2>Material Storage</h2>
+  <p class="section-sub">
+    Live contents of your account's Material Storage, grouped and ordered the same way the
+    in-game tab is. Materials sitting in your personal bank or character bags instead won't
+    show up here &mdash; only what's actually been deposited into storage.
+  </p>
+  {% if categories %}
+    {% for cat in categories %}
+    <div class="material-category">
+      <h3>{{ cat.category }}</h3>
+      <div class="material-grid">
+        {% for item in cat.materials %}
+        <div class="material-item" title="{{ item.name }}">
+          {% if item.icon %}<img src="{{ item.icon }}" alt="">{% endif %}
+          <span class="mi-count mono">{{ "{:,}".format(item.count) }}</span>
+          <span class="mi-name">{{ item.name }}</span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <p class="dim">No material storage data available right now &mdash; if you added your key
+    before this feature shipped, remove and re-add it in Settings with the
+    <strong>inventories</strong> scope checked.</p>
+  {% endif %}
+</section>
+
+{% endblock %}
