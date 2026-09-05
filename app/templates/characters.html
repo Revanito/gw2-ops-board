@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Characters — GW2 Ops Board{% endblock %}
+{% block content %}
+
+<section>
+  <h2>Characters</h2>
+  {% if characters %}
+    <div class="character-grid">
+      {% for c in characters %}
+      <div class="character-card">
+        <div class="char-name">{{ c.name }}</div>
+        <div class="dim">{{ c.race }} {{ c.profession }}</div>
+        <div class="char-level">Level {{ c.level }}</div>
+        {% if c.specialization %}
+        <div class="char-spec">
+          {% if c.specialization_icon %}<img src="{{ c.specialization_icon }}" alt="">{% endif %}
+          <span>{{ c.specialization }}</span>
+        </div>
+        {% endif %}
+        {% if c.crafting %}
+        <div class="char-crafting">
+          {% for d in c.crafting %}<span class="craft-badge">{{ d.discipline }} {{ d.rating }}</span>{% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="dim">No character data available right now &mdash; if you added your key before this
+    feature shipped, remove and re-add it in Settings with the <strong>characters</strong> and
+    <strong>builds</strong> scopes checked.</p>
+  {% endif %}
+</section>
+
+{% endblock %}

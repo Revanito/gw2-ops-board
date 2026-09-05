@@ -278,18 +278,34 @@ async def dashboard(request: Request):
         return RedirectResponse("/settings?error=your saved key couldn't be read, please re-add it")
 
     # Independent calls, run concurrently rather than one after another -
-    # this was previously the main reason the dashboard felt like it hung,
-    # especially fetch_characters() on accounts with several characters.
-    account, wallet, vault, characters = await asyncio.gather(
+    # this was previously the main reason the dashboard felt like it hung.
+    account, wallet, vault = await asyncio.gather(
         _safe(gw2_api.fetch_account(api_key), None, "fetch_account", user["discord_id"]),
         _safe(gw2_api.fetch_wallet(api_key), [], "fetch_wallet", user["discord_id"]),
         _safe(gw2_api.fetch_wizards_vault_daily(api_key), None, "fetch_wizards_vault_daily", user["discord_id"]),
-        _safe(gw2_api.fetch_characters(api_key), [], "fetch_characters", user["discord_id"]),
     )
 
     return templates.TemplateResponse("dashboard.html", {
-        "request": request, "user": user, "account": account, "wallet": wallet,
-        "vault": vault, "characters": characters,
+        "request": request, "user": user, "account": account, "wallet": wallet, "vault": vault,
+    })
+
+
+@app.get("/characters")
+async def characters_page(request: Request):
+    user = current_user(request)
+    if not user:
+        return RedirectResponse("/login")
+    if not user["encrypted_api_key"]:
+        return RedirectResponse("/settings?error=add your GW2 API key first")
+
+    api_key = decrypt(user["encrypted_api_key"])
+    if not api_key:
+        return RedirectResponse("/settings?error=your saved key couldn't be read, please re-add it")
+
+    characters = await _safe(gw2_api.fetch_characters(api_key), [], "fetch_characters", user["discord_id"])
+
+    return templates.TemplateResponse("characters.html", {
+        "request": request, "user": user, "characters": characters,
     })
 
 

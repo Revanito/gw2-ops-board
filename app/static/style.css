@@ -345,12 +345,20 @@ button.secondary, .btn.secondary { background: transparent; border: 1px solid va
 .char-crafting { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 .craft-badge { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px; font-size: 0.78rem; color: var(--text-dim); }
 
+/* --- Generic full-bleed wide content, for pages with no sidebar that still
+   want more room than the centered 980px .wrap column --- */
+.wide-bleed {
+  width: 100vw; margin-left: calc(50% - 50vw); margin-right: calc(50% - 50vw);
+  padding: 0 24px; box-sizing: border-box;
+}
+.wide-content { max-width: 1360px; margin: 0 auto; }
+
 .material-category { margin-bottom: 28px; }
 .material-category h3 {
   font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em;
   color: var(--accent-dim); margin: 0 0 10px; font-weight: 700;
 }
-.material-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.material-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
 .material-item {
   display: flex; align-items: center; gap: 8px;
   background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
@@ -358,4 +366,4 @@ button.secondary, .btn.secondary { background: transparent; border: 1px solid va
 }
 .material-item img { width: 24px; height: 24px; border-radius: 4px; flex-shrink: 0; }
 .mi-count { font-weight: 700; flex-shrink: 0; }
-.mi-name { color: var(--text-dim); font-size: 0.82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mi-name { color: var(--text-dim); font-size: 0.82rem; }
