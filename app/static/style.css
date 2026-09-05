@@ -27,6 +27,22 @@ html, body {
 
 .wrap { max-width: 980px; margin: 0 auto; padding: 28px 20px 80px; }
 
+#page-loading-overlay {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(15, 17, 21, 0.82);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  color: var(--text-dim); font-size: 0.9rem;
+}
+#page-loading-overlay .spinner {
+  width: 34px; height: 34px; border-radius: 50%;
+  border: 3px solid var(--border); border-top-color: var(--accent);
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  #page-loading-overlay .spinner { animation-duration: 2s; }
+}
+
 /* --- Top nav: full-width, sticky --- */
 .topbar {
   position: sticky; top: 0; z-index: 20;

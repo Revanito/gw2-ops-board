@@ -266,23 +266,22 @@ async def dashboard(request: Request):
     if not api_key:
         return RedirectResponse("/settings?error=your saved key couldn't be read, please re-add it")
 
-    account, wallet, vault, characters = None, [], None, []
-    try:
-        account = await gw2_api.fetch_account(api_key)
-    except Exception:
-        log.exception("fetch_account failed for %s", user["discord_id"])
-    try:
-        wallet = await gw2_api.fetch_wallet(api_key)
-    except Exception:
-        log.exception("fetch_wallet failed for %s", user["discord_id"])
-    try:
-        vault = await gw2_api.fetch_wizards_vault_daily(api_key)
-    except Exception:
-        log.exception("fetch_wizards_vault_daily failed for %s", user["discord_id"])
-    try:
-        characters = await gw2_api.fetch_characters(api_key)
-    except Exception:
-        log.exception("fetch_characters failed for %s", user["discord_id"])
+    async def _safe(coro, default, label):
+        try:
+            return await coro
+        except Exception:
+            log.exception("%s failed for %s", label, user["discord_id"])
+            return default
+
+    # Independent calls, run concurrently rather than one after another -
+    # this was previously the main reason the dashboard felt like it hung,
+    # especially fetch_characters() on accounts with several characters.
+    account, wallet, vault, characters = await asyncio.gather(
+        _safe(gw2_api.fetch_account(api_key), None, "fetch_account"),
+        _safe(gw2_api.fetch_wallet(api_key), [], "fetch_wallet"),
+        _safe(gw2_api.fetch_wizards_vault_daily(api_key), None, "fetch_wizards_vault_daily"),
+        _safe(gw2_api.fetch_characters(api_key), [], "fetch_characters"),
+    )
 
     return templates.TemplateResponse("dashboard.html", {
         "request": request, "user": user, "account": account, "wallet": wallet,

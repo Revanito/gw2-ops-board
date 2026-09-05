@@ -5,7 +5,9 @@ public. The API is read-only end to end - there is no endpoint that can move
 items, spend currency, or otherwise act on an account, so a leaked read key
 can only expose information, never let someone act on the account.
 """
+import asyncio
 import time
+from urllib.parse import quote
 
 import httpx
 
@@ -120,53 +122,56 @@ async def fetch_wizards_vault_daily(api_key: str) -> dict | None:
     }
 
 
+async def _fetch_character_detail(name: str, api_key: str) -> tuple[dict, int | None, list[dict]]:
+    """Character names routinely contain spaces/punctuation ("Ternowned
+    Bladesworn"), so the name has to be percent-encoded before it can go into
+    a URL path - passing it in raw silently breaks the request for most
+    real accounts. The three per-character calls are independent, so they're
+    issued concurrently rather than one after another."""
+    encoded = quote(name, safe="")
+    headers = _auth_headers(api_key)
+    core_resp, spec_resp, crafting_resp = await asyncio.gather(
+        _client.get(f"/characters/{encoded}/core", headers=headers),
+        _client.get(f"/characters/{encoded}/specializations", headers=headers),
+        _client.get(f"/characters/{encoded}/crafting", headers=headers),
+    )
+    core_resp.raise_for_status()
+    spec_resp.raise_for_status()
+    crafting_resp.raise_for_status()
+
+    pve_specs = spec_resp.json().get("pve", [])
+    # The 3rd PvE specialization slot is conventionally the elite spec.
+    elite_id = pve_specs[2]["id"] if len(pve_specs) > 2 and pve_specs[2] else None
+    crafting = [d for d in crafting_resp.json() if d.get("active")]
+    return core_resp.json(), elite_id, crafting
+
+
 async def fetch_characters(api_key: str) -> list[dict]:
     """One row per character: name, race, profession (Guardian, Necromancer,
     ...), level, current PvE elite specialization (if any is equipped), and
     active crafting disciplines (Armorsmith, Artificer, ... - a separate,
     unrelated concept from "profession" in GW2's own terminology, hence the
-    dedicated /crafting endpoint below). Three authenticated calls per
-    character (/core, /specializations, /crafting are all small) plus one
-    shared public lookup to resolve specialization names/icons - fine for the
-    handful of characters a typical account has, called live on every
-    dashboard load same as the rest of this module."""
+    dedicated /crafting endpoint below). All characters are fetched
+    concurrently (three small calls each) rather than one at a time, so an
+    account with a dozen+ characters doesn't turn the dashboard into a
+    multi-second sequential wait."""
     resp = await _client.get("/characters", headers=_auth_headers(api_key))
     resp.raise_for_status()
     names = resp.json()
     if not names:
         return []
 
-    cores = []
-    elite_id_by_name: dict[str, int | None] = {}
-    crafting_by_name: dict[str, list[dict]] = {}
-    for name in names:
-        core_resp = await _client.get(f"/characters/{name}/core", headers=_auth_headers(api_key))
-        core_resp.raise_for_status()
-        cores.append(core_resp.json())
+    results = await asyncio.gather(*(_fetch_character_detail(name, api_key) for name in names))
 
-        spec_resp = await _client.get(f"/characters/{name}/specializations", headers=_auth_headers(api_key))
-        spec_resp.raise_for_status()
-        pve_specs = spec_resp.json().get("pve", [])
-        # The 3rd PvE specialization slot is conventionally the elite spec.
-        elite_id_by_name[name] = pve_specs[2]["id"] if len(pve_specs) > 2 and pve_specs[2] else None
-
-        crafting_resp = await _client.get(f"/characters/{name}/crafting", headers=_auth_headers(api_key))
-        crafting_resp.raise_for_status()
-        crafting_by_name[name] = [
-            d for d in crafting_resp.json() if d.get("active")
-        ]
-
-    spec_ids = sorted({sid for sid in elite_id_by_name.values() if sid})
+    elite_ids = sorted({elite_id for _, elite_id, _ in results if elite_id})
     spec_catalog = {}
-    if spec_ids:
-        data = await _get_ref(f"/specializations?ids={','.join(map(str, spec_ids))}", ttl=86400)
+    if elite_ids:
+        data = await _get_ref(f"/specializations?ids={','.join(map(str, elite_ids))}", ttl=86400)
         spec_catalog = {s["id"]: s for s in data}
 
     characters = []
-    for core in cores:
-        elite_id = elite_id_by_name.get(core["name"])
+    for core, elite_id, crafting in results:
         spec_info = spec_catalog.get(elite_id)
-        crafting = crafting_by_name.get(core["name"], [])
         characters.append({
             "name": core["name"],
             "race": core.get("race", ""),
