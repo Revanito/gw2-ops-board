@@ -30,9 +30,15 @@ html, body {
 #page-loading-overlay {
   position: fixed; inset: 0; z-index: 100;
   background: rgba(15, 17, 21, 0.82);
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+  flex-direction: column; align-items: center; justify-content: center; gap: 14px;
   color: var(--text-dim); font-size: 0.9rem;
 }
+/* Specificity note: an ID selector beats the browser's own [hidden] {
+   display: none } rule, so "display: flex" can't live on the bare
+   #page-loading-overlay selector above - that would show the overlay on
+   every page load regardless of the hidden attribute. Gating it behind
+   :not([hidden]) lets the native rule win whenever the attribute is set. */
+#page-loading-overlay:not([hidden]) { display: flex; }
 #page-loading-overlay .spinner {
   width: 34px; height: 34px; border-radius: 50%;
   border: 3px solid var(--border); border-top-color: var(--accent);
