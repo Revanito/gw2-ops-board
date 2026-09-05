@@ -169,11 +169,16 @@ async def _fetch_character_detail(name: str, api_key: str) -> tuple[dict, int | 
         if len(pve_specs) > 2 and isinstance(pve_specs[2], dict):
             elite_id = pve_specs[2].get("id")
 
+        # The API always returns all 9 disciplines per character, most at
+        # rating 0/inactive if never trained. Shown here is every discipline
+        # with any actual progress, not just the 2 a character currently has
+        # equipped ("active") - trained-but-parked disciplines still count
+        # as "a job this character knows" for display purposes.
         crafting = []
         if crafting_resp.status_code == 200:
             crafting_json = crafting_resp.json()
             if isinstance(crafting_json, list):
-                crafting = [d for d in crafting_json if isinstance(d, dict) and d.get("active")]
+                crafting = [d for d in crafting_json if isinstance(d, dict) and d.get("rating", 0) > 0]
 
         return core_resp.json(), elite_id, crafting
     except Exception:
