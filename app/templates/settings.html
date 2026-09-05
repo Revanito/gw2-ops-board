@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Settings — GW2 Ops Board{% endblock %}
+{% block content %}
+
+<section>
+  <h2>Your GW2 API Key</h2>
+
+  {% if error %}<div class="notice error">{{ error }}</div>{% endif %}
+  {% if success %}<div class="notice success">{{ "Key removed." if success == "removed" else "Saved." }}</div>{% endif %}
+
+  <div class="panel">
+    <p class="hint">
+      Create a key at
+      <a href="https://account.arena.net/applications" target="_blank" rel="noopener">account.arena.net/applications</a>
+      with exactly these permissions checked: <strong>account, wallet, progression, unlocks, characters</strong>.
+      Nothing else is needed, and the GW2 API is read-only end to end &mdash; it has no endpoint
+      that can move items, spend currency, or otherwise act on your account, so this key can only
+      let this site <em>display</em> your account info (including your character list), never touch it.
+    </p>
+
+    {% if user["encrypted_api_key"] %}
+      <p>Key saved &mdash; added {{ user["api_key_added_at"][:10] }}. <code>••••••••••••••••</code></p>
+      <form method="post" action="/settings/api-key/delete">
+        <button type="submit" class="secondary">Remove key</button>
+      </form>
+    {% else %}
+      <form method="post" action="/settings/api-key">
+        <label for="api_key">API key</label>
+        <input type="text" id="api_key" name="api_key" placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXXXXXXXXXX-XXXX..." required>
+        <button type="submit">Save key</button>
+      </form>
+    {% endif %}
+  </div>
+</section>
+
+{% endblock %}

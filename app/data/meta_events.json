@@ -1,0 +1,879 @@
+{
+  "source": "https://www.lebusmagique.fr/pages/outils-gw2/timer-wb-et-hot.html",
+  "note": "Each zone repeats on a fixed 2-hour cycle (offsets in minutes from the start of any 2-hour UTC block, i.e. 00:00, 02:00, 04:00, ...). Intervals with no name in the source (prep/wait segments) are omitted.",
+  "zones": [
+    {
+      "name": "Shipwreck Strand",
+      "category": "Visions of Eternity",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-voe/rive-aux-epaves/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 40,
+          "end": 60,
+          "name": "Hammerhorn Brawl!"
+        }
+      ]
+    },
+    {
+      "name": "Starlit Weald",
+      "category": "Visions of Eternity",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-voe/bois-etoile/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 0,
+          "end": 15,
+          "name": "Secrets of the Wood"
+        },
+        {
+          "start": 100,
+          "end": 120,
+          "name": "Secrets of the Wood"
+        }
+      ]
+    },
+    {
+      "name": "Eternity's Garden",
+      "category": "Visions of Eternity",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-voe/jardin-de-l-eternite/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 70,
+          "end": 95,
+          "name": "Shackles of the Ancients"
+        }
+      ]
+    },
+    {
+      "name": "Bava Nisos",
+      "category": "Janthir Wilds",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-jw/bava-nisos/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 80,
+          "end": 105,
+          "name": "A Titanic Journey"
+        }
+      ]
+    },
+    {
+      "name": "Convergence: Mount Balrior",
+      "category": "Janthir Wilds",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-jw/convergences-mont-balrior/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 0,
+          "end": 20,
+          "name": "Convergence"
+        }
+      ]
+    },
+    {
+      "name": "Janthir Syntri",
+      "category": "Janthir Wilds",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-jw/syntri-de-janthir/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 30,
+          "end": 55,
+          "name": "Mist and Monsters"
+        }
+      ]
+    },
+    {
+      "name": "Convergence",
+      "category": "Secrets of the Obscure",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-soto/convergences/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 90,
+          "end": 110,
+          "name": "Convergence"
+        }
+      ]
+    },
+    {
+      "name": "Skywatch Archipelago",
+      "category": "Secrets of the Obscure",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-soto/archipel-de-l-observatoire-celeste/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 60,
+          "end": 85,
+          "name": "Unlock the Wizard's Tower"
+        }
+      ]
+    },
+    {
+      "name": "Wizard's Tower",
+      "category": "Secrets of the Obscure",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-soto/la-tour-du-sorcier/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 0,
+          "end": 20,
+          "name": "Night Flight"
+        },
+        {
+          "start": 60,
+          "end": 100,
+          "name": "Dragrown Target"
+        },
+        {
+          "start": 100,
+          "end": 115,
+          "name": "Target & Night Flight"
+        },
+        {
+          "start": 115,
+          "end": 120,
+          "name": "Wyvern"
+        }
+      ]
+    },
+    {
+      "name": "Amnytas",
+      "category": "Secrets of the Obscure",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-soto/amnytas/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 0,
+          "end": 25,
+          "name": "The Defense of Amnytas"
+        }
+      ]
+    },
+    {
+      "name": "Inner Nayos",
+      "category": "Secrets of the Obscure",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-soto/nayos-interieur/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 0,
+          "end": 25,
+          "name": "Path to Heitor (No fixed timer, complete 20 events, ∞)"
+        },
+        {
+          "start": 25,
+          "end": 50,
+          "name": "The Grinding Fangs (No fixed timer, complete Path to Heitor)"
+        },
+        {
+          "start": 50,
+          "end": 120,
+          "name": "Into the Spider's Den (No fixed timer, complete The Grinding Fangs)"
+        }
+      ]
+    },
+    {
+      "name": "Seitung Province",
+      "category": "End of Dragons",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-eod/province-de-seitung/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 90,
+          "end": 110,
+          "name": "Aetherblade Assault"
+        },
+        {
+          "start": 110,
+          "end": 120,
+          "name": "Boss"
+        }
+      ]
+    },
+    {
+      "name": "New Kaineng City",
+      "category": "End of Dragons",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-eod/neo-kaineng/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 0,
+          "end": 30,
+          "name": "Blackout in Kaineng"
+        }
+      ]
+    },
+    {
+      "name": "Echovald Wilds",
+      "category": "End of Dragons",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-eod/terres-sauvages-d-echovald/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 30,
+          "end": 65,
+          "name": "Gang War"
+        },
+        {
+          "start": 100,
+          "end": 120,
+          "name": "Tremblewood Fort"
+        }
+      ]
+    },
+    {
+      "name": "Dragon's End",
+      "category": "End of Dragons",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-eod/trepas-du-dragon/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 0,
+          "end": 5,
+          "name": "Prep."
+        },
+        {
+          "start": 5,
+          "end": 13,
+          "name": "Jade Abyss"
+        },
+        {
+          "start": 13,
+          "end": 45,
+          "name": "Preparation"
+        },
+        {
+          "start": 45,
+          "end": 53,
+          "name": "Jade Abyss"
+        },
+        {
+          "start": 53,
+          "end": 60,
+          "name": "Prep."
+        },
+        {
+          "start": 60,
+          "end": 120,
+          "name": "Battle for the Jade Sea"
+        },
+        {
+          "start": 120,
+          "end": 125,
+          "name": "Prep."
+        },
+        {
+          "start": 125,
+          "end": 133,
+          "name": "Jade Abyss"
+        }
+      ]
+    },
+    {
+      "name": "Gyala Delerin",
+      "category": "End of Dragons",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-eod/fosse-de-gyala/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 0,
+          "end": 120,
+          "name": "The Jade Crisis (No fixed timer, restarts continuously 15 minutes after the previous meta)"
+        }
+      ]
+    },
+    {
+      "name": "Day-Night Cycle - Cantha",
+      "category": "End of Dragons",
+      "link": "https://www.lebusmagique.fr/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 0,
+          "end": 35,
+          "name": "Night"
+        },
+        {
+          "start": 35,
+          "end": 40,
+          "name": "Dawn"
+        },
+        {
+          "start": 40,
+          "end": 95,
+          "name": "Day"
+        },
+        {
+          "start": 95,
+          "end": 100,
+          "name": "Dusk"
+        },
+        {
+          "start": 100,
+          "end": 120,
+          "name": "Night"
+        }
+      ]
+    },
+    {
+      "name": "Eye of the North",
+      "category": "Core Tyria",
+      "link": "https://www.lebusmagique.fr/pages/succes/chroniques/s1/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 0,
+          "end": 20,
+          "name": "Twisted Marionette"
+        },
+        {
+          "start": 30,
+          "end": 45,
+          "name": "Battle for Lion's Arch"
+        },
+        {
+          "start": 90,
+          "end": 105,
+          "name": "Tower of Nightmares"
+        }
+      ]
+    },
+    {
+      "name": "Eye of the North - Champion",
+      "category": "Icebrood Saga",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-pof/l-epopee-du-givre/visions-du-passe/l-acier-et-le-feu/oeil-du-nord/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 60,
+          "end": 85,
+          "name": "Dragon Storm"
+        }
+      ]
+    },
+    {
+      "name": "Fractal Invasion in Tyria",
+      "category": "Core Tyria",
+      "link": "https://www.lebusmagique.fr/pages/succes/histoires-annexes/enquete-invasive.html#invasiontyrie",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 0,
+          "end": 30,
+          "name": "Fractal Invasion in Tyria: Kessex Hills"
+        },
+        {
+          "start": 60,
+          "end": 90,
+          "name": "Fractal Invasion in Tyria: Diessa Plateau"
+        }
+      ]
+    },
+    {
+      "name": "Gendarran Fields - Mechanical Chaos",
+      "category": "Core Tyria",
+      "link": "https://www.lebusmagique.fr/pages/succes/chroniques/s1/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 60,
+          "end": 75,
+          "name": "Mechanical Invasion"
+        }
+      ]
+    },
+    {
+      "name": "Bjora Marches",
+      "category": "Icebrood Saga",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-pof/frontiere-de-bjora/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 0,
+          "end": 20,
+          "name": "Winter Storms"
+        },
+        {
+          "start": 65,
+          "end": 100,
+          "name": "Drakkar"
+        },
+        {
+          "start": 105,
+          "end": 120,
+          "name": "Winter Storms"
+        }
+      ]
+    },
+    {
+      "name": "Grothmar Valley - Khan-Ur's Vault",
+      "category": "Icebrood Saga",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-pof/vallee-de-grothmar/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 10,
+          "end": 25,
+          "name": "Fire Effigy Chamber (Flame Key)"
+        },
+        {
+          "start": 38,
+          "end": 58,
+          "name": "Doomlore Shrine (Ash Key)"
+        },
+        {
+          "start": 65,
+          "end": 83,
+          "name": "Ooze Pits (Blood Key)"
+        },
+        {
+          "start": 100,
+          "end": 115,
+          "name": "Metal Legion Concert (Iron Key)"
+        }
+      ]
+    },
+    {
+      "name": "Current Events",
+      "category": "Living World Season 4",
+      "link": "https://www.lebusmagique.fr/succes/histoires-annexes/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 30,
+          "end": 60,
+          "name": "Portals (Duration 5 minutes)"
+        },
+        {
+          "start": 90,
+          "end": 120,
+          "name": "Portals (Duration 5 minutes)"
+        }
+      ]
+    },
+    {
+      "name": "Thunderhead Peaks",
+      "category": "Living World Season 4",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-pof/pics-de-chef-tonnerre/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 0,
+          "end": 45,
+          "name": "Time Rift"
+        },
+        {
+          "start": 45,
+          "end": 60,
+          "name": "Oil Slicks"
+        },
+        {
+          "start": 60,
+          "end": 105,
+          "name": "Time Rift"
+        },
+        {
+          "start": 105,
+          "end": 120,
+          "name": "Thunderhead Peaks Dungeon"
+        }
+      ]
+    },
+    {
+      "name": "Jahai Bluffs",
+      "category": "Living World Season 4",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-pof/promontoire-de-jahai/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 60,
+          "end": 75,
+          "name": "Pre-event"
+        },
+        {
+          "start": 75,
+          "end": 90,
+          "name": "Branded Destroyer"
+        }
+      ]
+    },
+    {
+      "name": "Domain of Istan",
+      "category": "Living World Season 4",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-pof/domaine-d-istan/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 0,
+          "end": 10,
+          "name": "Palawadan"
+        },
+        {
+          "start": 10,
+          "end": 25,
+          "name": "Night"
+        },
+        {
+          "start": 25,
+          "end": 30,
+          "name": "Dawn"
+        },
+        {
+          "start": 30,
+          "end": 100,
+          "name": "Great Hall (every 15 minutes after completion)"
+        },
+        {
+          "start": 100,
+          "end": 120,
+          "name": "Palawadan"
+        },
+        {
+          "start": 120,
+          "end": 130,
+          "name": "Palawadan"
+        }
+      ]
+    },
+    {
+      "name": "Crystal Oasis",
+      "category": "Path of Fire",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-pof/oasis-de-cristal/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 5,
+          "end": 25,
+          "name": "Casino Blitz"
+        }
+      ]
+    },
+    {
+      "name": "Desert Highlands",
+      "category": "Path of Fire",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-pof/hautes-terres-du-desert/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 60,
+          "end": 80,
+          "name": "Buried Treasure"
+        }
+      ]
+    },
+    {
+      "name": "Elon Riverlands",
+      "category": "Path of Fire",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-pof/rives-de-l-elon/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 90,
+          "end": 100,
+          "name": "Path of Ascension"
+        },
+        {
+          "start": 110,
+          "end": 120,
+          "name": "Mad Impersonator"
+        }
+      ]
+    },
+    {
+      "name": "The Desolation",
+      "category": "Path of Fire",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-pof/la-desolation/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 30,
+          "end": 50,
+          "name": "The Junundu Uprising"
+        },
+        {
+          "start": 60,
+          "end": 80,
+          "name": "Torment Maws"
+        },
+        {
+          "start": 90,
+          "end": 110,
+          "name": "The Junundu Uprising"
+        }
+      ]
+    },
+    {
+      "name": "Domain of Vabbi",
+      "category": "Path of Fire",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-pof/domaine-de-vabbi/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 0,
+          "end": 15,
+          "name": "Forged by Fire"
+        },
+        {
+          "start": 30,
+          "end": 60,
+          "name": "The Serpents' Wrath"
+        },
+        {
+          "start": 60,
+          "end": 75,
+          "name": "Forged by Fire"
+        }
+      ]
+    },
+    {
+      "name": "Verdant Brink (VB)",
+      "category": "Heart of Thorns",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-hot/oree-d-emeraude/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 10,
+          "end": 30,
+          "name": "Night Canopy"
+        },
+        {
+          "start": 30,
+          "end": 105,
+          "name": "Day"
+        },
+        {
+          "start": 105,
+          "end": 120,
+          "name": "Night"
+        },
+        {
+          "start": 120,
+          "end": 130,
+          "name": "Night"
+        }
+      ]
+    },
+    {
+      "name": "Auric Basin (AB)",
+      "category": "Heart of Thorns",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-hot/bassin-aurique/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 45,
+          "end": 60,
+          "name": "Challenges"
+        },
+        {
+          "start": 60,
+          "end": 80,
+          "name": "Octovine"
+        },
+        {
+          "start": 80,
+          "end": 90,
+          "name": "Break"
+        },
+        {
+          "start": 90,
+          "end": 120,
+          "name": "Pillars"
+        }
+      ]
+    },
+    {
+      "name": "Tangled Depths (TD)",
+      "category": "Heart of Thorns",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-hot/profondeurs-verdoyantes/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 25,
+          "end": 30,
+          "name": "Prep"
+        },
+        {
+          "start": 30,
+          "end": 50,
+          "name": "Chak Gerents"
+        },
+        {
+          "start": 50,
+          "end": 120,
+          "name": "Defend the Outposts"
+        }
+      ]
+    },
+    {
+      "name": "Dragon's Stand (DS)",
+      "category": "Heart of Thorns",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-hot/repli-du-dragon/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 90,
+          "end": 120,
+          "name": "Start"
+        }
+      ]
+    },
+    {
+      "name": "Lake Doric",
+      "category": "Living World Season 3",
+      "link": "https://www.lebusmagique.fr/pages/extension/gw2-hot/lac-doric/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 30,
+          "end": 60,
+          "name": "Noran's Homestead"
+        },
+        {
+          "start": 60,
+          "end": 105,
+          "name": "Saidra's Haven"
+        },
+        {
+          "start": 105,
+          "end": 120,
+          "name": "New Loamhurst"
+        }
+      ]
+    },
+    {
+      "name": "Side Stories - Anomaly Occurrences",
+      "category": "Living World Season 3",
+      "link": "https://www.lebusmagique.fr/pages/succes/histoires-annexes/occurrences-d-anomalie.html",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 0,
+          "end": 15,
+          "name": "Wyvern"
+        },
+        {
+          "start": 15,
+          "end": 20,
+          "name": "Wyvern"
+        },
+        {
+          "start": 20,
+          "end": 35,
+          "name": "Anomaly: Canopy Falls"
+        },
+        {
+          "start": 35,
+          "end": 45,
+          "name": "Wyvern"
+        },
+        {
+          "start": 45,
+          "end": 60,
+          "name": "Wyvern"
+        },
+        {
+          "start": 60,
+          "end": 75,
+          "name": "Moa & Devourer"
+        },
+        {
+          "start": 75,
+          "end": 90,
+          "name": "Moa & Devourer"
+        },
+        {
+          "start": 90,
+          "end": 105,
+          "name": "Moa & Devourer"
+        },
+        {
+          "start": 105,
+          "end": 120,
+          "name": "Arctodus & Shark"
+        }
+      ]
+    },
+    {
+      "name": "Zeghai of the Lost",
+      "category": "Heart of Thorns",
+      "link": "https://www.lebusmagique.fr/pages/guides/equipement-hl/armes-des-brumes.html",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 15,
+          "end": 40,
+          "name": "Zeghai (location)"
+        },
+        {
+          "start": 75,
+          "end": 100,
+          "name": "Zeghai (location)"
+        }
+      ]
+    },
+    {
+      "name": "Dry Top (DT)",
+      "category": "Core Tyria",
+      "link": "https://www.lebusmagique.fr/pages/mises-a-jour-passees/col-aride/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 0,
+          "end": 40,
+          "name": "Crash Site"
+        },
+        {
+          "start": 40,
+          "end": 60,
+          "name": "Storm"
+        },
+        {
+          "start": 60,
+          "end": 100,
+          "name": "Crash Site"
+        },
+        {
+          "start": 100,
+          "end": 120,
+          "name": "Storm"
+        }
+      ]
+    },
+    {
+      "name": "Day-Night Cycle - Central Tyria",
+      "category": "Core Tyria",
+      "link": "https://www.lebusmagique.fr/",
+      "cycle_minutes": 120,
+      "intervals": [
+        {
+          "start": 0,
+          "end": 25,
+          "name": "Night"
+        },
+        {
+          "start": 25,
+          "end": 30,
+          "name": "Dawn"
+        },
+        {
+          "start": 30,
+          "end": 100,
+          "name": "Day"
+        },
+        {
+          "start": 100,
+          "end": 105,
+          "name": "Dusk"
+        },
+        {
+          "start": 105,
+          "end": 120,
+          "name": "Night"
+        }
+      ]
+    }
+  ]
+}

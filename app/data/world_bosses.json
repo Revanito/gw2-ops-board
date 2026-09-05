@@ -1,0 +1,224 @@
+{
+  "source": "https://www.lebusmagique.fr/pages/outils-gw2/les-world-boss.html",
+  "note": "Community-verified exact spawn times (not a naive grid) with in-game waypoint chat codes.",
+  "bosses": [
+    {
+      "name": "Admiral Taidha Covington",
+      "zone": "Bloodtide Coast",
+      "waypoint": "[&BKgBAAA=]",
+      "wiki_url": "https://wiki.guildwars2.com/wiki/Admiral_Taidha_Covington",
+      "spawns": [
+        "00:00",
+        "03:00",
+        "06:00",
+        "09:00",
+        "12:00",
+        "15:00",
+        "18:00",
+        "21:00"
+      ]
+    },
+    {
+      "name": "Claw of Jormag",
+      "zone": "Frostgorge Sound",
+      "waypoint": "[&BHoCAAA=]",
+      "wiki_url": "https://wiki.guildwars2.com/wiki/Claw_of_Jormag",
+      "spawns": [
+        "02:30",
+        "05:30",
+        "08:30",
+        "11:30",
+        "14:30",
+        "17:30",
+        "20:30",
+        "23:30"
+      ]
+    },
+    {
+      "name": "Fire Elemental",
+      "zone": "Metrica Province",
+      "waypoint": "[&BEYAAAA=]",
+      "wiki_url": "https://wiki.guildwars2.com/wiki/Fire_Elemental_(Metrica_Province)",
+      "spawns": [
+        "00:45",
+        "02:45",
+        "04:45",
+        "06:45",
+        "08:45",
+        "10:45",
+        "12:45",
+        "14:45",
+        "16:45",
+        "18:45",
+        "20:45",
+        "22:45"
+      ]
+    },
+    {
+      "name": "Golem Mark II",
+      "zone": "Mount Maelstrom",
+      "waypoint": "[&BNQCAAA=]",
+      "wiki_url": "https://wiki.guildwars2.com/wiki/Golem_Mark_II",
+      "spawns": [
+        "02:00",
+        "05:00",
+        "08:00",
+        "11:00",
+        "14:00",
+        "17:00",
+        "20:00",
+        "23:00"
+      ]
+    },
+    {
+      "name": "Great Jungle Wurm",
+      "zone": "Caledon Forest",
+      "waypoint": "[&BEEFAAA=]",
+      "wiki_url": "https://wiki.guildwars2.com/wiki/Great_Jungle_Wurm",
+      "spawns": [
+        "01:15",
+        "03:15",
+        "05:15",
+        "07:15",
+        "09:15",
+        "11:15",
+        "13:15",
+        "15:15",
+        "17:15",
+        "19:15",
+        "21:15",
+        "23:15"
+      ]
+    },
+    {
+      "name": "Karka Queen",
+      "zone": "Southsun Cove",
+      "waypoint": "[&BNcGAAA=]",
+      "wiki_url": "https://wiki.guildwars2.com/wiki/Karka_Queen",
+      "spawns": [
+        "01:55",
+        "05:55",
+        "10:25",
+        "14:55",
+        "17:55",
+        "22:55"
+      ]
+    },
+    {
+      "name": "Megadestroyer",
+      "zone": "Mount Maelstrom",
+      "waypoint": "[&BM0CAAA=]",
+      "wiki_url": "https://wiki.guildwars2.com/wiki/Megadestroyer",
+      "spawns": [
+        "00:30",
+        "03:30",
+        "06:30",
+        "09:30",
+        "12:30",
+        "15:30",
+        "18:30",
+        "21:30"
+      ]
+    },
+    {
+      "name": "Modniir Ulgoth",
+      "zone": "Harathi Hinterlands",
+      "waypoint": "[&BLEAAAA=]",
+      "wiki_url": "https://wiki.guildwars2.com/wiki/Modniir_Ulgoth",
+      "spawns": [
+        "01:30",
+        "04:30",
+        "07:30",
+        "10:30",
+        "13:30",
+        "16:30",
+        "19:30",
+        "22:30"
+      ]
+    },
+    {
+      "name": "Shadow Behemoth",
+      "zone": "Queensdale",
+      "waypoint": "[&BPwAAAA=]",
+      "wiki_url": "https://wiki.guildwars2.com/wiki/Shadow_Behemoth",
+      "spawns": [
+        "01:45",
+        "03:45",
+        "05:45",
+        "07:45",
+        "09:45",
+        "11:45",
+        "13:45",
+        "15:45",
+        "17:45",
+        "19:45",
+        "21:45",
+        "23:45"
+      ]
+    },
+    {
+      "name": "Svanir Shaman Chief",
+      "zone": "Wayfarer Foothills",
+      "waypoint": "[&BH4BAAA=]",
+      "wiki_url": "https://wiki.guildwars2.com/wiki/Svanir_Shaman_Chief",
+      "spawns": [
+        "00:15",
+        "02:15",
+        "04:15",
+        "06:15",
+        "08:15",
+        "10:15",
+        "12:15",
+        "14:15",
+        "16:15",
+        "18:15",
+        "20:15",
+        "22:15"
+      ]
+    },
+    {
+      "name": "Tequatl the Sunless",
+      "zone": "Sparkfly Fen",
+      "waypoint": "[&BNABAAA=]",
+      "wiki_url": "https://wiki.guildwars2.com/wiki/Tequatl_the_Sunless",
+      "spawns": [
+        "02:55",
+        "06:55",
+        "11:25",
+        "15:55",
+        "18:55",
+        "23:55"
+      ]
+    },
+    {
+      "name": "The Shatterer",
+      "zone": "Blazeridge Steppes",
+      "waypoint": "[&BE4DAAA=]",
+      "wiki_url": "https://wiki.guildwars2.com/wiki/The_Shatterer",
+      "spawns": [
+        "01:00",
+        "04:00",
+        "07:00",
+        "10:00",
+        "13:00",
+        "16:00",
+        "19:00",
+        "22:00"
+      ]
+    },
+    {
+      "name": "Triple Trouble",
+      "zone": "Bloodtide Coast",
+      "waypoint": "[&BKoBAAA=]",
+      "wiki_url": "https://wiki.guildwars2.com/wiki/Triple_Trouble",
+      "spawns": [
+        "00:55",
+        "03:55",
+        "07:55",
+        "12:25",
+        "16:55",
+        "19:55"
+      ]
+    }
+  ]
+}

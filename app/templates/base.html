@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}GW2 Ops Board{% endblock %}</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="brand" href="/">GW2 <span>Ops Board</span></a>
+    <nav class="tabs">
+      <a class="tab{{ ' active' if request.url.path == '/' }}" href="/">Home</a>
+      <a class="tab{{ ' active' if request.url.path == '/market' }}" href="/market">Market</a>
+      {% if user %}
+        <a class="tab{{ ' active' if request.url.path == '/dashboard' }}" href="/dashboard">Dashboard</a>
+        <a class="tab{{ ' active' if request.url.path == '/settings' }}" href="/settings">Settings</a>
+        <a class="tab" href="/logout">Logout ({{ user["username"] }})</a>
+      {% else %}
+        <a class="tab" href="/login">Login with Discord</a>
+      {% endif %}
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  {% block content %}{% endblock %}
+
+  <footer>
+    World boss &amp; meta timers: lebusmagique.fr. Gemstore tracker: thatshaman.com. TP prices: official GW2 API.
+  </footer>
+</div>
+</body>
+</html>

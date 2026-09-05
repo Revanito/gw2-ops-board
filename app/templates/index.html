@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}GW2 Ops Board{% endblock %}
+{% block content %}
+
+<section>
+  <div class="timeline-header">
+    <div>
+      <h2 style="margin-bottom:6px">World Boss &amp; Meta-Event Timers</h2>
+      <p class="timeline-desc">Click a boss block to copy its waypoint chat code. Row labels link to that map's guide. Times shown in your local timezone. Data from lebusmagique.fr, verified over years by the community.</p>
+    </div>
+    <div class="clocks">
+      <div class="clock"><span class="clock-label">Server (UTC)</span><span id="clock-utc" class="mono clock-value">--:--:--</span></div>
+      <div class="clock"><span class="clock-label">Your time</span><span id="clock-local" class="mono clock-value">--:--:--</span></div>
+    </div>
+  </div>
+
+  <div class="filter-bleed">
+    <div class="cat-filters" id="cat-filters">
+      <label class="cat-filter">
+        <input type="checkbox" checked data-target="wb">
+        <img src="{{ world_boss_icon }}" alt=""><span>World Bosses</span>
+      </label>
+      {% for cat, hue, icon in category_order %}
+        {% if zones_by_category.get(cat) %}
+        <label class="cat-filter">
+          <input type="checkbox" checked data-target="{{ cat|replace(' ', '-')|lower }}">
+          <img src="{{ icon }}" alt=""><span>{{ cat }}</span>
+        </label>
+        {% endif %}
+      {% endfor %}
+      <button type="button" class="filter-toggle-all" id="filter-toggle-all">Select none</button>
+    </div>
+  </div>
+
+  <div class="timeline-bleed">
+    <div class="timeline-scroll" id="timeline-scroll">
+      <div class="timeline-inner" id="timeline-inner">
+        <div class="ruler" id="ruler"></div>
+        <div class="now-line" id="now-line"></div>
+
+        <div class="category-group" style="--cat-h:{{ world_boss_hue }}" data-cat-id="wb">
+          <div class="category-heading"><img class="cat-icon" src="{{ world_boss_icon }}" alt="">World Bosses (click = copy waypoint)</div>
+          <div class="track-label">All world bosses</div>
+          <div class="track" id="track-worldbosses"></div>
+        </div>
+
+        {% for cat, hue, icon in category_order %}
+          {% set zones = zones_by_category.get(cat) %}
+          {% if zones %}
+          <div class="category-group" style="--cat-h:{{ hue }}" data-cat-id="{{ cat|replace(' ', '-')|lower }}">
+            <div class="category-heading"><img class="cat-icon" src="{{ icon }}" alt="">{{ cat }}</div>
+            {% for zone in zones %}
+            <div class="track-label"><a href="{{ zone.link }}" target="_blank" rel="noopener">{{ zone.name }} ↗</a></div>
+            <div class="track" data-category="{{ cat }}" data-zone="{{ loop.index0 }}"></div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</section>
+
+<script id="boss-data" type="application/json">{{ world_bosses | tojson }}</script>
+<script id="meta-data" type="application/json">{{ zones_by_category | tojson }}</script>
+<script src="/static/timeline.js"></script>
+{% endblock %}

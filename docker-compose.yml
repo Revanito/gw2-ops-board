@@ -1,0 +1,13 @@
+services:
+  gw2-ops-board:
+    build: ./app
+    container_name: gw2-ops-board
+    ports:
+      - "8087:8000"
+    volumes:
+      - ./data:/data
+      - ./favorites.json:/app/favorites.json
+      - ./watchlist.json:/app/watchlist.json
+    env_file:
+      - .env
+    restart: unless-stopped

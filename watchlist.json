@@ -1,0 +1,10 @@
+{
+  "_comment": "GW2 item IDs to track on the Trading Post. Find an item's id on its wiki infobox (API ID field) or at https://www.gw2bltc.com. Items with a known crafting recipe (via /v2/recipes/search?output=<id>) get a Craft Cost/Profit column computed from live ingredient prices - see app/gw2_api.py. These five are just placeholder examples - swap in whatever you actually care about.",
+  "item_ids": [
+    19976,
+    19721,
+    46747,
+    19747,
+    19684
+  ]
+}

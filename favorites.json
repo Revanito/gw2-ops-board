@@ -1,0 +1,6 @@
+{
+  "_comment": "Gem store item names to watch for. Must match the item's exact wiki page name (spaces, capitalization). Cross-referenced against thatshaman.com's live rotation feed every refresh cycle.",
+  "items": [
+    "Wandering Weapon Master Outfit"
+  ]
+}

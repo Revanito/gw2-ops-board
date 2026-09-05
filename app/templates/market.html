@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}Market — GW2 Ops Board{% endblock %}
+{% block content %}
+
+{% macro craft_columns(item, row_id) %}
+  {% if item.recipe %}
+    <td class="num mono">{{ item.recipe.craft_cost | coins }}</td>
+    <td class="num mono {{ 'profit-pos' if item.recipe.profit >= 0 else 'profit-neg' }}">{{ item.recipe.profit | coins }}</td>
+    <td><button type="button" class="recipe-toggle" data-recipe="{{ row_id }}">Recipe ▾</button></td>
+  {% else %}
+    <td class="num dim">—</td>
+    <td class="num dim">—</td>
+    <td></td>
+  {% endif %}
+{% endmacro %}
+
+{% macro recipe_row(item, row_id, colspan) %}
+  {% if item.recipe %}
+  <tr class="recipe-row" id="{{ row_id }}" hidden>
+    <td colspan="{{ colspan }}">
+      <div class="recipe-detail">
+        <div class="recipe-title">Recipe for {{ item.name }}</div>
+        {% for ing in item.recipe.ingredients %}
+        <div class="ingredient-line">
+          {% if ing.icon %}<img src="{{ ing.icon }}" alt="">{% endif %}
+          <span class="ing-qty">{{ ing.qty }}×</span>
+          <span class="ing-name">{{ ing.name }}</span>
+          <span class="ing-price mono">{{ ing.unit_price | coins }} each</span>
+          <span class="ing-subtotal mono">{{ (ing.unit_price * ing.qty) | coins }}</span>
+        </div>
+        {% endfor %}
+        <div class="ingredient-line recipe-total">
+          <span class="ing-name">Total craft cost</span>
+          <span class="ing-subtotal mono">{{ item.recipe.craft_cost | coins }}</span>
+        </div>
+        <div class="ingredient-line recipe-total">
+          <span class="ing-name">Instant-sell revenue (after 15% TP cut)</span>
+          <span class="ing-subtotal mono">{{ item.recipe.revenue | coins }}</span>
+        </div>
+      </div>
+    </td>
+  </tr>
+  {% endif %}
+{% endmacro %}
+
+<div class="market-bleed">
+  <div class="market-layout">
+    <aside class="market-sidebar">
+      <h2>Gemstore Favorites</h2>
+      <p class="section-sub">On sale now, cross-referenced against favorites.json, captured live from thatshaman.com's feed:</p>
+      {% if gemstore_favorites %}
+      <div class="gem-list">
+        {% for item in gemstore_favorites %}
+        <a class="gem-item" href="{{ item.wiki_url }}" target="_blank" rel="noopener">
+          {% if item.icon %}<img src="{{ item.icon }}" alt="">{% endif %}
+          <div class="gi-text">
+            <div class="gi-name">{{ item.name }}</div>
+            <div class="gi-desc">{{ item.price or "?" }} · {{ "always available" if item.indefinite else "until " + item.end[:10] }}</div>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+      {% else %}
+        <p class="dim">None of your favorites (favorites.json) are on sale right now.</p>
+      {% endif %}
+    </aside>
+
+    <div class="market-main">
+      <section>
+        <h2>Trading Post Watchlist</h2>
+        <p class="section-sub">Live buy/sell from the official GW2 API, for whatever item IDs you list in watchlist.json. Items with a known crafting recipe get a Craft Cost/Profit column - click "Recipe" to see the ingredient breakdown.</p>
+        {% if watchlist %}
+        <div class="table-scroll">
+          <table>
+            <thead><tr><th></th><th>Item</th><th class="num">Sell</th><th class="num">Buy</th><th class="num">Craft Cost</th><th class="num">Craft Profit</th><th></th></tr></thead>
+            <tbody>
+              {% for item in watchlist %}
+              <tr>
+                <td>{% if item.icon %}<img class="row-icon" src="{{ item.icon }}" alt="">{% endif %}</td>
+                <td>{{ item.name }}</td>
+                <td class="num mono">{{ item.sell | coins }}</td>
+                <td class="num mono">{{ item.buy | coins }}</td>
+                {{ craft_columns(item, "recipe-" ~ loop.index0) }}
+              </tr>
+              {{ recipe_row(item, "recipe-" ~ loop.index0, 7) }}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+          <p class="dim">No watchlist data yet.</p>
+        {% endif %}
+      </section>
+
+      <section>
+        <h2>Items to Flip</h2>
+        <p class="section-sub">
+          Live scan of the entire Trading Post for buy-order → relist-to-sell margins, restricted to
+          actual crafting materials to filter out random gear-drop noise. Place a buy order at "Buy",
+          relist at "Sell" once it fills. Items with a known recipe also get a Craft Cost/Profit column,
+          same as the watchlist above - sometimes crafting it yourself beats waiting on the flip.
+          Rescanned hourly.
+        </p>
+        <div class="flip-caveat">
+          <strong>Caveat:</strong> the official GW2 API doesn't expose sold/bought-per-day history (that's
+          gw2bltc's own multi-year polling data) - "Orders (buy/sell)" below is current order-book depth, a
+          rough stand-in for real trade volume, not confirmed turnover. Check an item's TP listing in-game
+          before committing gold to it.
+        </div>
+        {% if items_to_flip %}
+        <div class="table-scroll" style="margin-top:14px">
+          <table>
+            <thead>
+              <tr>
+                <th></th><th>Item</th><th class="num">Buy</th><th class="num">Sell</th>
+                <th class="num">Profit</th><th class="num">Profit %</th><th class="num">Orders (buy/sell)</th>
+                <th class="num">Craft Cost</th><th class="num">Craft Profit</th><th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in items_to_flip %}
+              <tr>
+                <td>{% if item.icon %}<img class="row-icon" src="{{ item.icon }}" alt="">{% endif %}</td>
+                <td>{{ item.name }}</td>
+                <td class="num mono">{{ item.buy | coins }}</td>
+                <td class="num mono">{{ item.sell | coins }}</td>
+                <td class="num mono profit-pos">{{ item.profit | coins }}</td>
+                <td class="num mono profit-pos">{{ item.profit_pct }}%</td>
+                <td class="num dim">{{ "{:,}".format(item.buy_qty) }} / {{ "{:,}".format(item.sell_qty) }}</td>
+                {{ craft_columns(item, "flip-recipe-" ~ loop.index0) }}
+              </tr>
+              {{ recipe_row(item, "flip-recipe-" ~ loop.index0, 10) }}
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+          <p class="dim">No flip scan has completed yet - the first one runs shortly after startup, then hourly.</p>
+        {% endif %}
+      </section>
+
+      {% if updated_at or flip_updated_at %}
+      <p class="hint">
+        {% if updated_at %}Gemstore/watchlist last refreshed: {{ updated_at }}.{% endif %}
+        {% if flip_updated_at %}Items to Flip last scanned: {{ flip_updated_at }}.{% endif %}
+      </p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script src="/static/market.js"></script>
+{% endblock %}
