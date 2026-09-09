@@ -63,6 +63,21 @@
         </div>
       </div>
       <p class="hint" style="margin-top:8px">Live rates from the official Exchange - larger trades get worse rates (real slippage), so these reflect a realistic trade size rather than a flat per-gem price.</p>
+
+      <button type="button" class="ach-toggle" id="exchange-history-toggle">▾ last 30 days</button>
+      <div class="exchange-history-panel" id="exchange-history-panel" hidden>
+        <div class="chart-wrap">
+          <canvas id="exchange-chart-gems"></canvas>
+          <div class="chart-tooltip" id="exchange-tooltip-gems" hidden></div>
+        </div>
+        <div class="chart-label">Gold for 400 gems</div>
+
+        <div class="chart-wrap">
+          <canvas id="exchange-chart-gold"></canvas>
+          <div class="chart-tooltip" id="exchange-tooltip-gold" hidden></div>
+        </div>
+        <div class="chart-label">Gems for 100 gold</div>
+      </div>
       {% else %}
         <p class="dim">Exchange rates unavailable right now.</p>
       {% endif %}
@@ -193,4 +208,5 @@
 </div>
 
 <script src="/static/market.js?v={{ static_version }}"></script>
+<script src="/static/gem-exchange-chart.js?v={{ static_version }}"></script>
 {% endblock %}

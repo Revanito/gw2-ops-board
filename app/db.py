@@ -23,7 +23,22 @@ CREATE TABLE IF NOT EXISTS todos (
     achievement_id INTEGER,
     FOREIGN KEY (discord_id) REFERENCES users(discord_id)
 );
+
+-- One row per refresh_public_data() tick (every settings.refresh_interval_minutes),
+-- so the "last 30 days" gem exchange chart is built from data this app actually
+-- collected itself - the official API has no historical endpoint to read this from.
+CREATE TABLE IF NOT EXISTS gem_exchange_history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ts INTEGER NOT NULL,
+    sell_gems_for_coins INTEGER NOT NULL,
+    sell_gold_for_gems INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_gem_exchange_history_ts ON gem_exchange_history(ts);
 """
+
+# Kept a little past 30 days so a "last 30 days" chart never has a thin
+# leading edge right at the boundary.
+_GEM_HISTORY_RETENTION_DAYS = 35
 
 
 @contextmanager
@@ -113,3 +128,25 @@ def toggle_todo(discord_id: str, todo_id: int) -> None:
 def delete_todo(discord_id: str, todo_id: int) -> None:
     with get_conn() as conn:
         conn.execute("DELETE FROM todos WHERE id = ? AND discord_id = ?", (todo_id, discord_id))
+
+
+def record_gem_exchange_sample(sell_gems_for_coins: int, sell_gold_for_gems: int) -> None:
+    now = int(datetime.now(timezone.utc).timestamp())
+    cutoff = now - _GEM_HISTORY_RETENTION_DAYS * 86400
+    with get_conn() as conn:
+        conn.execute(
+            "INSERT INTO gem_exchange_history (ts, sell_gems_for_coins, sell_gold_for_gems) "
+            "VALUES (?, ?, ?)",
+            (now, sell_gems_for_coins, sell_gold_for_gems),
+        )
+        conn.execute("DELETE FROM gem_exchange_history WHERE ts < ?", (cutoff,))
+
+
+def get_gem_exchange_history(days: int = 30) -> list[sqlite3.Row]:
+    cutoff = int(datetime.now(timezone.utc).timestamp()) - days * 86400
+    with get_conn() as conn:
+        return conn.execute(
+            "SELECT ts, sell_gems_for_coins, sell_gold_for_gems FROM gem_exchange_history "
+            "WHERE ts >= ? ORDER BY ts ASC",
+            (cutoff,),
+        ).fetchall()

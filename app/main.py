@@ -23,8 +23,9 @@ import wiki_client
 from config import settings
 from crypto import decrypt, encrypt
 from db import (
-    add_todo, clear_api_key, delete_todo, get_user, init_db, list_todos,
-    set_api_key, toggle_todo, upsert_user,
+    add_todo, clear_api_key, delete_todo, get_gem_exchange_history, get_user,
+    init_db, list_todos, record_gem_exchange_sample, set_api_key, toggle_todo,
+    upsert_user,
 )
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
@@ -72,7 +73,10 @@ async def refresh_public_data() -> None:
         log.exception("gemstore refresh failed")
 
     try:
-        public_cache["gem_exchange"] = await gw2_api.fetch_gem_exchange()
+        exchange = await gw2_api.fetch_gem_exchange()
+        public_cache["gem_exchange"] = exchange
+        if exchange:
+            record_gem_exchange_sample(exchange["sell_gems_for_coins"], exchange["sell_gold_for_gems"])
     except Exception:
         log.exception("gem exchange refresh failed")
 
@@ -247,6 +251,25 @@ def market(request: Request):
         "updated_at": public_cache["updated_at"],
         "flip_updated_at": public_cache["flip_updated_at"],
     })
+
+
+@app.get("/market/gem-exchange-history")
+def market_gem_exchange_history():
+    """Public, no login needed - same visibility as the rest of /market.
+    Backs the "last 30 days" chart; points accumulate over time from
+    refresh_public_data()'s own samples since the official API has no
+    history endpoint to read this from directly."""
+    rows = get_gem_exchange_history(days=30)
+    return {
+        "points": [
+            {
+                "ts": row["ts"],
+                "sell_gems_for_coins": row["sell_gems_for_coins"],
+                "sell_gold_for_gems": row["sell_gold_for_gems"],
+            }
+            for row in rows
+        ]
+    }
 
 
 @app.get("/login")
