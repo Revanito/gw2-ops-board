@@ -37,10 +37,25 @@
         {% if t.achievement_id %}
           {% if t.achievement_progress %}
           <div class="todo-achievement">
-            <span class="dim">{{ t.achievement_progress.name }}:</span>
+            <span class="dim">
+              <a href="{{ t.achievement_progress.wiki_url }}" target="_blank" rel="noopener" class="todo-link">{{ t.achievement_progress.name }} ↗</a>:
+            </span>
             <span class="mono">{{ "{:,}".format(t.achievement_progress.current) }} / {{ "{:,}".format(t.achievement_progress.max) }}</span>
             {% if t.achievement_progress.done %}<span class="todo-achievement-done">✓ complete</span>{% endif %}
             <div class="todo-progress-bar"><div class="todo-progress-fill" style="width:{{ [(t.achievement_progress.current / t.achievement_progress.max * 100), 100] | min }}%"></div></div>
+
+            {% if t.achievement_progress.children %}
+            <button type="button" class="ach-toggle" data-target="ach-children-{{ t.id }}" data-count="{{ t.achievement_progress.children | length }}">▾ {{ t.achievement_progress.children | length }} sub-achievements</button>
+            <div class="ach-children" id="ach-children-{{ t.id }}" hidden>
+              {% for c in t.achievement_progress.children %}
+              <div class="ach-child{{ ' done' if c.done }}">
+                {{ "✓" if c.done else "○" }}
+                <a href="{{ c.wiki_url }}" target="_blank" rel="noopener">{{ c.name }}</a>
+                {% if c.max and c.max > 1 %}<span class="dim mono">{{ "{:,}".format(c.current) }}/{{ "{:,}".format(c.max) }}</span>{% endif %}
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
           </div>
           {% else %}
           <div class="todo-achievement dim">Achievement linked - add your API key to see progress.</div>
@@ -58,4 +73,5 @@
   {% endif %}
 </section>
 
+<script src="/static/todo.js?v={{ static_version }}"></script>
 {% endblock %}

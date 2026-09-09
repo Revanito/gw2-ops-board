@@ -327,7 +327,11 @@ async def _load_achievement_cache() -> dict:
                 if not name:
                     continue
                 tiers = a.get("tiers") or []
-                entry = {"id": a["id"], "name": name, "max": tiers[-1]["count"] if tiers else None}
+                entry = {
+                    "id": a["id"], "name": name,
+                    "max": tiers[-1]["count"] if tiers else None,
+                    "flags": a.get("flags") or [],
+                }
                 by_name[name.lower()] = entry
                 by_id[a["id"]] = entry
 
@@ -336,9 +340,53 @@ async def _load_achievement_cache() -> dict:
         return _achievement_cache
 
 
+# In-process cache of every achievement *category* (~355 of them, each
+# listing the achievement ids it contains) - the only reliable way to find
+# a meta-achievement's sub-achievements. There's no direct field on an
+# achievement pointing at its own category, and category *names* often
+# differ from the meta achievement's own display name (category
+# "Entanglement" vs. achievement '"Entanglement" Mastery'), so this can't
+# be done by name matching - only by checking which category's achievement
+# list actually contains the id.
+_category_cache: list[dict] | None = None
+_category_cache_loaded_at = 0.0
+_CATEGORY_CACHE_TTL = 86400
+
+
+async def _load_category_cache() -> list[dict]:
+    global _category_cache, _category_cache_loaded_at
+    now = time.time()
+    if _category_cache is not None and now - _category_cache_loaded_at < _CATEGORY_CACHE_TTL:
+        return _category_cache
+
+    ids_resp = await _client.get("/achievements/categories")
+    ids_resp.raise_for_status()
+    all_ids = ids_resp.json()
+
+    chunks = [all_ids[i:i + 200] for i in range(0, len(all_ids), 200)]
+    responses = await asyncio.gather(
+        *(_client.get(f"/achievements/categories?ids={','.join(map(str, chunk))}") for chunk in chunks)
+    )
+
+    categories = []
+    for resp in responses:
+        resp.raise_for_status()
+        for c in resp.json():
+            categories.append({"id": c["id"], "name": c.get("name", ""), "achievements": c.get("achievements") or []})
+
+    _category_cache = categories
+    _category_cache_loaded_at = time.time()
+    return _category_cache
+
+
 async def warm_achievement_cache() -> None:
     """Fire-and-forget at app startup - see the module comment above."""
     await _load_achievement_cache()
+    await _load_category_cache()
+
+
+def _achievement_wiki_url(name: str) -> str:
+    return "https://wiki.guildwars2.com/wiki/" + name.replace(" ", "_")
 
 
 async def search_achievement(name: str) -> dict | None:
@@ -351,27 +399,66 @@ async def search_achievement(name: str) -> dict | None:
     return cache["by_name"].get(name.strip().lower())
 
 
+async def _achievement_children_ids(achievement_id: int) -> list[int]:
+    """If this achievement is flagged "CategoryDisplay" (ArenaNet's own
+    signal that it represents/summarizes a whole category - true of every
+    meta-achievement, e.g. "Decade of the Dragons"), returns the ids of
+    every other achievement in that same category. Otherwise []."""
+    cache = await _load_achievement_cache()
+    entry = cache["by_id"].get(achievement_id)
+    if not entry or "CategoryDisplay" not in entry["flags"]:
+        return []
+
+    categories = await _load_category_cache()
+    for cat in categories:
+        if achievement_id in cat["achievements"]:
+            return [aid for aid in cat["achievements"] if aid != achievement_id]
+    return []
+
+
 async def fetch_achievement_progress(api_key: str, achievement_id: int) -> dict | None:
     """Live current/max/done for one achievement linked from the to-do
-    list. An achievement with zero progress often has no entry at all in
-    /account/achievements (rather than an entry showing 0), so "max" falls
-    back to the achievement's own top-tier threshold from the catalog
-    whenever the account has no progress entry yet."""
-    resp = await _client.get(f"/account/achievements?ids={achievement_id}", headers=_auth_headers(api_key))
-    resp.raise_for_status()
-    rows = resp.json()
-    entry = rows[0] if rows else {}
-
+    list, plus (for a meta-achievement) each sub-achievement's own
+    done/name/wiki link so the to-do list can show a "N sub-achievements"
+    breakdown. An achievement with zero progress often has no entry at all
+    in /account/achievements (rather than an entry showing 0), so "max"
+    falls back to the achievement's own top-tier threshold from the
+    catalog whenever the account has no progress entry yet."""
     cache = await _load_achievement_cache()
     cat_entry = cache["by_id"].get(achievement_id)
     if cat_entry is None:
         return None
 
+    child_ids = await _achievement_children_ids(achievement_id)
+    ids_to_fetch = [achievement_id, *child_ids]
+    resp = await _client.get(
+        f"/account/achievements?ids={','.join(map(str, ids_to_fetch))}", headers=_auth_headers(api_key),
+    )
+    resp.raise_for_status()
+    progress_by_id = {row["id"]: row for row in resp.json()}
+
+    own_progress = progress_by_id.get(achievement_id, {})
+    children = []
+    for cid in child_ids:
+        child_cat = cache["by_id"].get(cid)
+        if not child_cat:
+            continue
+        child_progress = progress_by_id.get(cid, {})
+        children.append({
+            "name": child_cat["name"],
+            "wiki_url": _achievement_wiki_url(child_cat["name"]),
+            "current": child_progress.get("current", 0),
+            "max": child_progress.get("max") or child_cat.get("max") or 1,
+            "done": child_progress.get("done", False),
+        })
+
     return {
         "name": cat_entry["name"],
-        "current": entry.get("current", 0),
-        "max": entry.get("max") or cat_entry.get("max") or 1,
-        "done": entry.get("done", False),
+        "wiki_url": _achievement_wiki_url(cat_entry["name"]),
+        "current": own_progress.get("current", 0),
+        "max": own_progress.get("max") or cat_entry.get("max") or 1,
+        "done": own_progress.get("done", False),
+        "children": children,
     }
 
 
