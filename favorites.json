@@ -2,8 +2,13 @@
   "_comment": "Gem store item names to watch for. Must match the item's exact wiki page name (spaces, capitalization). Cross-referenced against thatshaman.com's live rotation feed every refresh cycle.",
   "items": [
     "Wandering Weapon Master Outfit",
-    "Pyre Boots Skin",
     "Home Instance Node Pack",
-    "Home Instance Contract Pack"
+    "Home Instance Contract Pack",
+    "Copper-Fed Salvage-o-Matic",
+    "Shared Inventory Slot",
+    "Infinite Skyscale Gathering Tools",
+    "Infinite Herald of Aurene Gathering Tools",
+    "Infinite Holy Barrage Gathering Tools",
+    "Infinite Metal Legion Gathering Tools"
   ]
 }
