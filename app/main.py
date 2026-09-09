@@ -129,6 +129,21 @@ async def _flip_scan_loop() -> None:
         await refresh_flip_candidates()
 
 
+async def _warm_achievement_cache() -> None:
+    try:
+        await gw2_api.warm_achievement_cache()
+    except Exception:
+        log.exception("achievement cache warm-up failed")
+
+
+async def _achievement_cache_loop() -> None:
+    # Matches the cache's own 24h TTL - re-warms it in the background before
+    # it ever goes stale enough to force a live request to reload it inline.
+    while True:
+        await asyncio.sleep(24 * 60 * 60)
+        await _warm_achievement_cache()
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     init_db()
@@ -140,10 +155,17 @@ async def lifespan(app: FastAPI):
     # first scan finishes.
     flip_task = asyncio.create_task(refresh_flip_candidates())
     flip_loop_task = asyncio.create_task(_flip_scan_loop())
+    # Same reasoning: warming the achievement-name cache (~42 API calls) is
+    # too slow to do inline in a request - that's exactly what caused an
+    # nginx 504 the first time someone linked an achievement on a to-do item.
+    achievement_task = asyncio.create_task(_warm_achievement_cache())
+    achievement_loop_task = asyncio.create_task(_achievement_cache_loop())
     yield
     refresh_task.cancel()
     flip_task.cancel()
     flip_loop_task.cancel()
+    achievement_task.cancel()
+    achievement_loop_task.cancel()
 
 
 app = FastAPI(lifespan=lifespan)

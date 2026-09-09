@@ -284,10 +284,15 @@ async def fetch_materials(api_key: str) -> list[dict]:
 # count for every achievement in the game, ~8200 of them) - needed to
 # resolve a typed achievement name to an id for the to-do list's optional
 # achievement tracking. There's no official name-search endpoint, so this
-# fetches the full catalog once (~42 chunked calls) and caches it long-term,
-# since the catalog itself changes rarely (new content patches only).
+# fetches the full catalog once (~42 chunked calls, done concurrently) and
+# caches it long-term, since the catalog itself changes rarely (new content
+# patches only). Loading it inline during a live request (the first time
+# someone linked an achievement) caused a real nginx 504 - warm_achievement_
+# cache() below is called once at app startup instead, so a user request
+# never has to pay for this.
 _achievement_cache: dict | None = None
 _achievement_cache_loaded_at = 0.0
+_achievement_cache_lock = asyncio.Lock()
 _ACHIEVEMENT_CACHE_TTL = 86400
 
 
@@ -297,28 +302,43 @@ async def _load_achievement_cache() -> dict:
     if _achievement_cache is not None and now - _achievement_cache_loaded_at < _ACHIEVEMENT_CACHE_TTL:
         return _achievement_cache
 
-    ids_resp = await _client.get("/achievements")
-    ids_resp.raise_for_status()
-    all_ids = ids_resp.json()
+    async with _achievement_cache_lock:
+        # Another caller may have just finished loading it while this one
+        # was waiting on the lock - re-check before fetching again.
+        now = time.time()
+        if _achievement_cache is not None and now - _achievement_cache_loaded_at < _ACHIEVEMENT_CACHE_TTL:
+            return _achievement_cache
 
-    by_name: dict[str, dict] = {}
-    by_id: dict[int, dict] = {}
-    for i in range(0, len(all_ids), 200):
-        chunk = all_ids[i:i + 200]
-        resp = await _client.get(f"/achievements?ids={','.join(map(str, chunk))}")
-        resp.raise_for_status()
-        for a in resp.json():
-            name = a.get("name")
-            if not name:
-                continue
-            tiers = a.get("tiers") or []
-            entry = {"id": a["id"], "name": name, "max": tiers[-1]["count"] if tiers else None}
-            by_name[name.lower()] = entry
-            by_id[a["id"]] = entry
+        ids_resp = await _client.get("/achievements")
+        ids_resp.raise_for_status()
+        all_ids = ids_resp.json()
 
-    _achievement_cache = {"by_name": by_name, "by_id": by_id}
-    _achievement_cache_loaded_at = now
-    return _achievement_cache
+        chunks = [all_ids[i:i + 200] for i in range(0, len(all_ids), 200)]
+        responses = await asyncio.gather(
+            *(_client.get(f"/achievements?ids={','.join(map(str, chunk))}") for chunk in chunks)
+        )
+
+        by_name: dict[str, dict] = {}
+        by_id: dict[int, dict] = {}
+        for resp in responses:
+            resp.raise_for_status()
+            for a in resp.json():
+                name = a.get("name")
+                if not name:
+                    continue
+                tiers = a.get("tiers") or []
+                entry = {"id": a["id"], "name": name, "max": tiers[-1]["count"] if tiers else None}
+                by_name[name.lower()] = entry
+                by_id[a["id"]] = entry
+
+        _achievement_cache = {"by_name": by_name, "by_id": by_id}
+        _achievement_cache_loaded_at = time.time()
+        return _achievement_cache
+
+
+async def warm_achievement_cache() -> None:
+    """Fire-and-forget at app startup - see the module comment above."""
+    await _load_achievement_cache()
 
 
 async def search_achievement(name: str) -> dict | None:
