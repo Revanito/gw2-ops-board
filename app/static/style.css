@@ -391,15 +391,19 @@ button.secondary, .btn.secondary { background: transparent; border: 1px solid va
 .todo-item.done .todo-text { text-decoration: line-through; }
 .todo-check-form, .todo-delete-form { margin: 0; }
 .todo-check {
-  width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border);
-  background: var(--bg); color: var(--accent); font-weight: 700; font-size: 0.85rem;
+  width: 22px; height: 22px; border-radius: 5px; border: 2px solid var(--text-dim);
+  background: transparent; color: transparent; font-weight: 700; font-size: 0.85rem;
   display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0;
 }
-.todo-item.done .todo-check { background: var(--accent-soft); border-color: var(--accent-dim); }
+.todo-check:hover { border-color: var(--accent); }
+.todo-item.done .todo-check {
+  background: var(--accent); border-color: var(--accent); color: #0b1013;
+}
 .todo-text { flex: 1; font-size: 0.92rem; word-break: break-word; }
 .todo-link { margin-left: 6px; color: var(--accent); text-decoration: none; }
 .todo-delete {
-  background: transparent; border: none; color: var(--text-dim); cursor: pointer;
-  font-size: 0.9rem; padding: 4px 6px; flex-shrink: 0;
+  background: transparent; border: 1px solid var(--border); border-radius: 6px; color: var(--text-dim);
+  cursor: pointer; font-size: 0.85rem; width: 26px; height: 26px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center; margin-left: auto;
 }
-.todo-delete:hover { color: #f87171; }
+.todo-delete:hover { color: #f87171; border-color: #f87171; }
