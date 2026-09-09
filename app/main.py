@@ -147,8 +147,17 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 app.add_middleware(SessionMiddleware, secret_key=settings.session_secret)
-app.mount("/static", StaticFiles(directory=Path(__file__).parent / "static"), name="static")
+STATIC_DIR = Path(__file__).parent / "static"
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
+
+# Cache-busts every /static/* reference (style.css, timeline.js, etc.) so a
+# deploy's changes show up immediately instead of waiting out browsers' (and
+# any CDN's) cache of the old file. Docker's COPY sets each file's mtime to
+# build time, so this changes on every rebuild without needing a manual bump.
+templates.env.globals["static_version"] = int(
+    max((f.stat().st_mtime for f in STATIC_DIR.rglob("*") if f.is_file()), default=0)
+)
 
 
 def format_coins(copper: int) -> Markup:

@@ -6,7 +6,7 @@
 <title>{% block title %}GW2 Ops Board{% endblock %}</title>
 <link rel="icon" type="image/png" href="/static/favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/static/style.css">
+<link rel="stylesheet" href="/static/style.css?v={{ static_version }}">
 </head>
 <body>
 <header class="topbar">
@@ -41,6 +41,6 @@
   <div class="spinner"></div>
   <div>Loading&hellip;</div>
 </div>
-<script src="/static/loading.js"></script>
+<script src="/static/loading.js?v={{ static_version }}"></script>
 </body>
 </html>

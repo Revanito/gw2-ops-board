@@ -63,5 +63,5 @@
 
 <script id="boss-data" type="application/json">{{ world_bosses | tojson }}</script>
 <script id="meta-data" type="application/json">{{ zones_by_category | tojson }}</script>
-<script src="/static/timeline.js"></script>
+<script src="/static/timeline.js?v={{ static_version }}"></script>
 {% endblock %}
