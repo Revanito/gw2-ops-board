@@ -479,6 +479,14 @@ async def fetch_achievement_progress(api_key: str, achievement_id: int) -> dict 
             "done": child_progress.get("done", False),
         })
 
+    # The category's own achievement list comes back in a fairly arbitrary
+    # interleaved order, not the grouped order the wiki curates by hand.
+    # ArenaNet names meta sub-achievements "Group: Specific Name" often
+    # enough (as with "Decade of the Dragons") that grouping by that prefix
+    # and sorting alphabetically is a reasonable general fix, without
+    # hardcoding anything to this one achievement.
+    children.sort(key=lambda c: tuple(c["name"].split(":", 1)) if ":" in c["name"] else (c["name"],))
+
     items = []
     bit_defs = cat_entry.get("bits") or []
     if bit_defs:
