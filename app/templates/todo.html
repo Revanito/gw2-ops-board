@@ -23,13 +23,28 @@
         <div class="todo-progress-bar"><div class="todo-progress-fill" style="width:{{ [(t.achievement_progress.current / t.achievement_progress.max * 100), 100] | min }}%"></div></div>
 
         {% if t.achievement_progress.children %}
-        <button type="button" class="ach-toggle" data-target="ach-children-{{ t.id }}" data-count="{{ t.achievement_progress.children | length }}">▾ {{ t.achievement_progress.children | length }} sub-achievements</button>
+        <button type="button" class="ach-toggle" data-target="ach-children-{{ t.id }}" data-count="{{ t.achievement_progress.children | length }}" data-label="sub-achievements">▾ {{ t.achievement_progress.children | length }} sub-achievements</button>
         <div class="ach-children" id="ach-children-{{ t.id }}" hidden>
           {% for c in t.achievement_progress.children %}
           <div class="ach-child{{ ' done' if c.done }}">
             {{ "✓" if c.done else "○" }}
             <a href="{{ c.wiki_url }}" target="_blank" rel="noopener">{{ c.name }}</a>
             {% if c.max and c.max > 1 %}<span class="dim mono">{{ "{:,}".format(c.current) }}/{{ "{:,}".format(c.max) }}</span>{% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {% if t.achievement_progress.collect_items %}
+        <button type="button" class="ach-toggle" data-target="ach-items-{{ t.id }}" data-count="{{ t.achievement_progress.collect_items | length }}" data-label="items to collect">▾ {{ t.achievement_progress.collect_items | length }} items to collect</button>
+        <div class="ach-children" id="ach-items-{{ t.id }}" hidden>
+          {% for c in t.achievement_progress.collect_items %}
+          <div class="ach-child{{ ' done' if c.done }}">
+            <span>{{ "✓" if c.done else "○" }}</span>
+            <div class="ach-child-text">
+              {% if c.wiki_url %}<a href="{{ c.wiki_url }}" target="_blank" rel="noopener">{{ c.name }}</a>{% else %}<span>{{ c.name }}</span>{% endif %}
+              {% if c.hint %}<div class="ach-hint">{{ c.hint }}</div>{% endif %}
+            </div>
           </div>
           {% endfor %}
         </div>

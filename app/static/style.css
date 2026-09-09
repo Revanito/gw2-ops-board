@@ -441,8 +441,10 @@ button.secondary, .btn.secondary { background: transparent; border: 1px solid va
    user-agent rules), so the JS toggle would flip the attribute correctly
    while the element stayed visible (or invisible) no matter what. */
 .ach-children:not([hidden]) { display: flex; }
-.ach-child { font-size: 0.82rem; display: flex; align-items: center; gap: 8px; color: var(--text-dim); }
+.ach-child { font-size: 0.82rem; display: flex; align-items: flex-start; gap: 8px; color: var(--text-dim); }
 .ach-child.done { color: var(--accent); }
 .ach-child a { color: inherit; text-decoration: none; }
 .ach-child a:hover { text-decoration: underline; }
+.ach-child-text { min-width: 0; }
+.ach-hint { font-size: 0.76rem; opacity: 0.8; margin-top: 2px; }
 .todo-delete:hover { color: #f87171; border-color: #f87171; }

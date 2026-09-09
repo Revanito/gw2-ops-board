@@ -331,6 +331,7 @@ async def _load_achievement_cache() -> dict:
                     "id": a["id"], "name": name,
                     "max": tiers[-1]["count"] if tiers else None,
                     "flags": a.get("flags") or [],
+                    "bits": a.get("bits") or [],
                 }
                 by_name[name.lower()] = entry
                 by_id[a["id"]] = entry
@@ -416,14 +417,39 @@ async def _achievement_children_ids(achievement_id: int) -> list[int]:
     return []
 
 
+async def _resolve_bit_names(bits: list[dict]) -> dict[tuple[str, int], str]:
+    """"Collection"-style achievements (type "ItemSet") track their steps as
+    a "bits" array where each bit points at an Item or Skin id (a "Text"
+    bit carries its own description and needs no lookup). Resolves display
+    names for the Item/Skin ones."""
+    item_ids = [b["id"] for b in bits if b.get("type") == "Item" and "id" in b]
+    skin_ids = [b["id"] for b in bits if b.get("type") == "Skin" and "id" in b]
+
+    names: dict[tuple[str, int], str] = {}
+    if item_ids:
+        items = await fetch_items(item_ids)
+        for iid, info in items.items():
+            names[("Item", iid)] = info.get("name", f"Item {iid}")
+    if skin_ids:
+        resp = await _client.get(f"/skins?ids={','.join(map(str, skin_ids))}")
+        if resp.status_code == 200:
+            for s in resp.json():
+                names[("Skin", s["id"])] = s.get("name", f"Skin {s['id']}")
+    return names
+
+
 async def fetch_achievement_progress(api_key: str, achievement_id: int) -> dict | None:
     """Live current/max/done for one achievement linked from the to-do
-    list, plus (for a meta-achievement) each sub-achievement's own
-    done/name/wiki link so the to-do list can show a "N sub-achievements"
-    breakdown. An achievement with zero progress often has no entry at all
-    in /account/achievements (rather than an entry showing 0), so "max"
-    falls back to the achievement's own top-tier threshold from the
-    catalog whenever the account has no progress entry yet."""
+    list, plus a sub-breakdown when there is one:
+    - a meta-achievement (the "CategoryDisplay" flag) breaks down into its
+      sibling achievements in the same category ("children")
+    - a collection-style achievement ("ItemSet" type, e.g. legendary
+      precursor collections) breaks down into each item/skin to collect,
+      with whatever in-game hint text ArenaNet provides ("items")
+    An achievement with zero progress often has no entry at all in
+    /account/achievements (rather than an entry showing 0), so "max" falls
+    back to the achievement's own top-tier threshold from the catalog
+    whenever the account has no progress entry yet."""
     cache = await _load_achievement_cache()
     cat_entry = cache["by_id"].get(achievement_id)
     if cat_entry is None:
@@ -438,6 +464,7 @@ async def fetch_achievement_progress(api_key: str, achievement_id: int) -> dict 
     progress_by_id = {row["id"]: row for row in resp.json()}
 
     own_progress = progress_by_id.get(achievement_id, {})
+
     children = []
     for cid in child_ids:
         child_cat = cache["by_id"].get(cid)
@@ -452,6 +479,27 @@ async def fetch_achievement_progress(api_key: str, achievement_id: int) -> dict 
             "done": child_progress.get("done", False),
         })
 
+    items = []
+    bit_defs = cat_entry.get("bits") or []
+    if bit_defs:
+        # "bits" (which indices are complete) is only present while the
+        # achievement is incomplete - once done, every step counts as done.
+        completed = set(own_progress.get("bits") or [])
+        fully_done = own_progress.get("done", False)
+        bit_names = await _resolve_bit_names(bit_defs)
+        for i, b in enumerate(bit_defs):
+            btype = b.get("type")
+            hint = b.get("text") or ""
+            if btype == "Text":
+                name, wiki_url = (hint or f"Step {i + 1}"), None
+            else:
+                name = bit_names.get((btype, b.get("id")), hint or f"{btype} {b.get('id')}")
+                wiki_url = _achievement_wiki_url(name)
+            items.append({
+                "name": name, "hint": hint if btype != "Text" else "", "wiki_url": wiki_url,
+                "done": fully_done or i in completed,
+            })
+
     return {
         "name": cat_entry["name"],
         "wiki_url": _achievement_wiki_url(cat_entry["name"]),
@@ -459,6 +507,12 @@ async def fetch_achievement_progress(api_key: str, achievement_id: int) -> dict 
         "max": own_progress.get("max") or cat_entry.get("max") or 1,
         "done": own_progress.get("done", False),
         "children": children,
+        # Named "collect_items" rather than "items" - a dict's own .items()
+        # method shadows a same-named key in Jinja's attribute lookup (bit
+        # us once already with the Material Storage view), so this avoids
+        # the footgun entirely instead of relying on bracket-notation
+        # template access everywhere.
+        "collect_items": items,
     }
 
 

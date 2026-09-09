@@ -4,7 +4,7 @@
       const target = document.getElementById(btn.dataset.target);
       const isOpen = !target.hidden;
       target.hidden = isOpen;
-      btn.textContent = (isOpen ? "▾ " : "▴ ") + btn.dataset.count + " sub-achievements";
+      btn.textContent = (isOpen ? "▾ " : "▴ ") + btn.dataset.count + " " + btn.dataset.label;
     });
   });
 })();
