@@ -12,6 +12,16 @@ CREATE TABLE IF NOT EXISTS users (
     encrypted_api_key TEXT,
     api_key_added_at TEXT
 );
+
+CREATE TABLE IF NOT EXISTS todos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    discord_id TEXT NOT NULL,
+    text TEXT NOT NULL,
+    link TEXT,
+    done INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    FOREIGN KEY (discord_id) REFERENCES users(discord_id)
+);
 """
 
 
@@ -60,3 +70,39 @@ def clear_api_key(discord_id: str) -> None:
             "UPDATE users SET encrypted_api_key = NULL, api_key_added_at = NULL WHERE discord_id = ?",
             (discord_id,),
         )
+
+
+def add_todo(discord_id: str, text: str, link: str | None) -> None:
+    now = datetime.now(timezone.utc).isoformat()
+    with get_conn() as conn:
+        conn.execute(
+            "INSERT INTO todos (discord_id, text, link, created_at) VALUES (?, ?, ?, ?)",
+            (discord_id, text, link, now),
+        )
+
+
+def list_todos(discord_id: str) -> list[sqlite3.Row]:
+    """Unfinished items first (oldest first within each group), so the
+    to-do list itself doesn't need any client-side sorting - a checked-off
+    item sinks below the active ones but stays visible rather than
+    disappearing."""
+    with get_conn() as conn:
+        return conn.execute(
+            "SELECT * FROM todos WHERE discord_id = ? ORDER BY done ASC, id ASC",
+            (discord_id,),
+        ).fetchall()
+
+
+def toggle_todo(discord_id: str, todo_id: int) -> None:
+    # discord_id is part of the WHERE clause (not just id) so one user can
+    # never toggle/delete another user's item by guessing/reusing an id.
+    with get_conn() as conn:
+        conn.execute(
+            "UPDATE todos SET done = NOT done WHERE id = ? AND discord_id = ?",
+            (todo_id, discord_id),
+        )
+
+
+def delete_todo(discord_id: str, todo_id: int) -> None:
+    with get_conn() as conn:
+        conn.execute("DELETE FROM todos WHERE id = ? AND discord_id = ?", (todo_id, discord_id))

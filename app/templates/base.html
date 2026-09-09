@@ -19,6 +19,7 @@
         <a class="tab{{ ' active' if request.url.path == '/dashboard' }}" href="/dashboard">Dashboard</a>
         <a class="tab{{ ' active' if request.url.path == '/characters' }}" href="/characters">Characters</a>
         <a class="tab{{ ' active' if request.url.path == '/materials' }}" href="/materials">Materials</a>
+        <a class="tab{{ ' active' if request.url.path == '/todo' }}" href="/todo">To-Do</a>
         <a class="tab{{ ' active' if request.url.path == '/settings' }}" href="/settings">Settings</a>
         <a class="tab" href="/logout">Logout ({{ user["username"] }})</a>
       {% else %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}To-Do — GW2 Ops Board{% endblock %}
+{% block content %}
+
+<section>
+  <h2>To-Do</h2>
+  <p class="section-sub">
+    A personal checklist — bosses to do, things to buy, achievements to chip away at. Nobody
+    but you can see this. Optionally attach a link (a wiki page, an LFG post, whatever's useful).
+  </p>
+
+  <form method="post" action="/todo/add" class="todo-add-form">
+    <input type="text" name="text" placeholder="e.g. Kill Tequatl, buy 250 Mystic Coins, progress &quot;Bounty Hunter&quot;&hellip;" required maxlength="300">
+    <input type="url" name="link" placeholder="Optional link (wiki, LFG, etc.)">
+    <button type="submit">Add</button>
+  </form>
+
+  {% if todos %}
+  <div class="todo-list">
+    {% for t in todos %}
+    <div class="todo-item{{ ' done' if t.done }}">
+      <form method="post" action="/todo/{{ t.id }}/toggle" class="todo-check-form">
+        <button type="submit" class="todo-check" aria-label="Toggle done">{{ "✓" if t.done else "" }}</button>
+      </form>
+      <div class="todo-text">
+        {{ t.text }}
+        {% if t.link %}<a href="{{ t.link }}" target="_blank" rel="noopener" class="todo-link">↗</a>{% endif %}
+      </div>
+      <form method="post" action="/todo/{{ t.id }}/delete" class="todo-delete-form">
+        <button type="submit" class="todo-delete" aria-label="Remove">✕</button>
+      </form>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <p class="dim">Nothing on your list yet — add something above.</p>
+  {% endif %}
+</section>
+
+{% endblock %}

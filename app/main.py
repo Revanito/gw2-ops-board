@@ -21,7 +21,10 @@ import meta_events
 import wiki_client
 from config import settings
 from crypto import decrypt, encrypt
-from db import clear_api_key, get_user, init_db, set_api_key, upsert_user
+from db import (
+    add_todo, clear_api_key, delete_todo, get_user, init_db, list_todos,
+    set_api_key, toggle_todo, upsert_user,
+)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("gw2-ops-board")
@@ -344,3 +347,48 @@ async def materials(request: Request):
     return templates.TemplateResponse("materials.html", {
         "request": request, "user": user, "categories": categories,
     })
+
+
+@app.get("/todo")
+def todo_page(request: Request):
+    user = current_user(request)
+    if not user:
+        return RedirectResponse("/login")
+    return templates.TemplateResponse("todo.html", {
+        "request": request, "user": user, "todos": list_todos(user["discord_id"]),
+    })
+
+
+@app.post("/todo/add")
+def todo_add(request: Request, text: str = Form(...), link: str = Form("")):
+    user = current_user(request)
+    if not user:
+        return RedirectResponse("/login", status_code=303)
+    text = text.strip()
+    link = link.strip()
+    if text:
+        # Link is only ever rendered back as an <a href>, so only allow
+        # http(s) - no javascript: URLs, even though the only person who'd
+        # ever open their own to-do list is the account's own owner.
+        if link and not link.startswith(("http://", "https://")):
+            link = ""
+        add_todo(user["discord_id"], text[:300], link or None)
+    return RedirectResponse("/todo", status_code=303)
+
+
+@app.post("/todo/{todo_id}/toggle")
+def todo_toggle(request: Request, todo_id: int):
+    user = current_user(request)
+    if not user:
+        return RedirectResponse("/login", status_code=303)
+    toggle_todo(user["discord_id"], todo_id)
+    return RedirectResponse("/todo", status_code=303)
+
+
+@app.post("/todo/{todo_id}/delete")
+def todo_delete(request: Request, todo_id: int):
+    user = current_user(request)
+    if not user:
+        return RedirectResponse("/login", status_code=303)
+    delete_todo(user["discord_id"], todo_id)
+    return RedirectResponse("/todo", status_code=303)

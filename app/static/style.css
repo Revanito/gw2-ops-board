@@ -310,7 +310,7 @@ footer {
 .panel a { color: var(--accent); }
 label { font-size: 0.82rem; font-weight: 600; display: block; margin-bottom: 4px; }
 
-input[type="text"], input[type="password"] {
+input[type="text"], input[type="password"], input[type="url"] {
   width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
   background: var(--bg); color: var(--text); font-size: 0.95rem; margin: 8px 0 14px; font-family: inherit;
 }
@@ -375,3 +375,31 @@ button.secondary, .btn.secondary { background: transparent; border: 1px solid va
 .material-item img { width: 24px; height: 24px; border-radius: 4px; flex-shrink: 0; }
 .mi-count { font-weight: 700; flex-shrink: 0; }
 .mi-name { color: var(--text-dim); font-size: 0.82rem; }
+
+.todo-add-form { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; max-width: 680px; }
+.todo-add-form input[type="text"] { flex: 2; min-width: 240px; margin: 0; width: auto; }
+.todo-add-form input[type="url"] { flex: 1; min-width: 180px; margin: 0; width: auto; }
+.todo-add-form button { flex-shrink: 0; }
+
+.todo-list { display: flex; flex-direction: column; gap: 8px; max-width: 680px; }
+.todo-item {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 14px;
+}
+.todo-item.done { opacity: 0.55; }
+.todo-item.done .todo-text { text-decoration: line-through; }
+.todo-check-form, .todo-delete-form { margin: 0; }
+.todo-check {
+  width: 24px; height: 24px; border-radius: 6px; border: 1px solid var(--border);
+  background: var(--bg); color: var(--accent); font-weight: 700; font-size: 0.85rem;
+  display: flex; align-items: center; justify-content: center; padding: 0; flex-shrink: 0;
+}
+.todo-item.done .todo-check { background: var(--accent-soft); border-color: var(--accent-dim); }
+.todo-text { flex: 1; font-size: 0.92rem; word-break: break-word; }
+.todo-link { margin-left: 6px; color: var(--accent); text-decoration: none; }
+.todo-delete {
+  background: transparent; border: none; color: var(--text-dim); cursor: pointer;
+  font-size: 0.9rem; padding: 4px 6px; flex-shrink: 0;
+}
+.todo-delete:hover { color: #f87171; }
