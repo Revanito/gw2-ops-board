@@ -46,7 +46,24 @@
 <div class="market-bleed">
   <div class="market-layout">
     <aside class="market-sidebar">
-      <h2>Gemstore Favorites</h2>
+      <h2>Gem Exchange</h2>
+      {% if gem_exchange %}
+      <div class="exchange-box">
+        <div class="exchange-row">
+          <span class="exchange-label">Sell {{ gem_exchange.sell_gems }} gems for</span>
+          <span class="exchange-value mono">{{ gem_exchange.sell_coins | coins }}</span>
+        </div>
+        <div class="exchange-row">
+          <span class="exchange-label">Buy gems with {{ (gem_exchange.buy_coins / 10000) | round | int }}g for</span>
+          <span class="exchange-value mono">{{ "{:,}".format(gem_exchange.buy_gems) }} gems</span>
+        </div>
+      </div>
+      <p class="hint" style="margin-top:8px">Live rates from the official Exchange - larger trades get worse rates (real slippage), so these reflect a realistic trade size rather than a flat per-gem price.</p>
+      {% else %}
+        <p class="dim">Exchange rates unavailable right now.</p>
+      {% endif %}
+
+      <h2 style="margin-top:28px">Gemstore Favorites</h2>
       <p class="section-sub">On sale now, cross-referenced against favorites.json, captured live from thatshaman.com's feed:</p>
       {% if gemstore_favorites %}
       <div class="gem-list">

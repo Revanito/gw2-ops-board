@@ -148,6 +148,14 @@ td.dim { color: var(--text-dim); }
 .market-main { flex: 1; min-width: 0; }
 .market-main .section-sub { max-width: none; }
 
+.exchange-box {
+  background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;
+}
+.exchange-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 0.84rem; }
+.exchange-label { color: var(--text-dim); }
+.exchange-value { font-weight: 700; white-space: nowrap; }
+
 .gem-list { display: flex; flex-direction: column; gap: 10px; }
 .gem-item {
   display: flex; align-items: center; gap: 10px;

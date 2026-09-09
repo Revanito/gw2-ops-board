@@ -32,7 +32,7 @@ CONFIG_DIR = Path(__file__).parent
 
 public_cache: dict = {
     "gemstore_favorites": [], "gemstore_promotions": [], "watchlist": [], "updated_at": None,
-    "items_to_flip": [], "flip_updated_at": None,
+    "items_to_flip": [], "flip_updated_at": None, "gem_exchange": None,
 }
 
 # thatshaman's own rotating single-item promotional showcase - independent
@@ -65,6 +65,11 @@ async def refresh_public_data() -> None:
         public_cache["gemstore_promotions"] = promotions
     except Exception:
         log.exception("gemstore refresh failed")
+
+    try:
+        public_cache["gem_exchange"] = await gw2_api.fetch_gem_exchange()
+    except Exception:
+        log.exception("gem exchange refresh failed")
 
     try:
         item_ids = _load_json_list(CONFIG_DIR / "watchlist.json", "item_ids")
@@ -200,6 +205,7 @@ def market(request: Request):
         "user": current_user(request),
         "gemstore_favorites": public_cache["gemstore_favorites"],
         "gemstore_promotions": public_cache["gemstore_promotions"],
+        "gem_exchange": public_cache["gem_exchange"],
         "watchlist": public_cache["watchlist"],
         "items_to_flip": public_cache["items_to_flip"],
         "updated_at": public_cache["updated_at"],

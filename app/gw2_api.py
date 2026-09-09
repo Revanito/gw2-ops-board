@@ -288,6 +288,28 @@ async def fetch_worldbosses_looted_today(api_key: str) -> set[str]:
     return set(resp.json())
 
 
+async def fetch_gem_exchange() -> dict | None:
+    """Public, no key needed. Live gold<->gem exchange rates, for a
+    representative quantity each direction rather than an abstract per-unit
+    rate - 400 gems (the size of the smallest real-money gem purchase) for
+    selling, and 100 gold for buying, so the numbers reflect something a
+    player would actually consider doing. The Exchange has real slippage at
+    volume, so "coins per gem" differs slightly between the two calls."""
+    try:
+        sell_resp = await _client.get("/commerce/exchange/gems?quantity=400")
+        sell_resp.raise_for_status()
+        buy_resp = await _client.get("/commerce/exchange/coins?quantity=1000000")
+        buy_resp.raise_for_status()
+    except httpx.HTTPStatusError:
+        return None
+    return {
+        "sell_gems": 400,
+        "sell_coins": sell_resp.json()["quantity"],
+        "buy_coins": 1000000,
+        "buy_gems": buy_resp.json()["quantity"],
+    }
+
+
 async def fetch_prices(item_ids: list[int]) -> dict[int, dict]:
     """Public, no key needed. Returns {item_id: {"buy", "sell"}} in copper."""
     if not item_ids:
