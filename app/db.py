@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS todos (
     link TEXT,
     done INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL,
+    achievement_id INTEGER,
     FOREIGN KEY (discord_id) REFERENCES users(discord_id)
 );
 """
@@ -39,6 +40,12 @@ def get_conn():
 def init_db() -> None:
     with get_conn() as conn:
         conn.executescript(_SCHEMA)
+        # CREATE TABLE IF NOT EXISTS only helps on a brand-new DB - an
+        # already-deployed todos table predates achievement_id, so it needs
+        # a real migration rather than relying on the schema script above.
+        cols = {row["name"] for row in conn.execute("PRAGMA table_info(todos)")}
+        if "achievement_id" not in cols:
+            conn.execute("ALTER TABLE todos ADD COLUMN achievement_id INTEGER")
 
 
 def upsert_user(discord_id: str, username: str, avatar_hash: str | None) -> None:
@@ -72,12 +79,12 @@ def clear_api_key(discord_id: str) -> None:
         )
 
 
-def add_todo(discord_id: str, text: str, link: str | None) -> None:
+def add_todo(discord_id: str, text: str, link: str | None, achievement_id: int | None = None) -> None:
     now = datetime.now(timezone.utc).isoformat()
     with get_conn() as conn:
         conn.execute(
-            "INSERT INTO todos (discord_id, text, link, created_at) VALUES (?, ?, ?, ?)",
-            (discord_id, text, link, now),
+            "INSERT INTO todos (discord_id, text, link, created_at, achievement_id) VALUES (?, ?, ?, ?, ?)",
+            (discord_id, text, link, now, achievement_id),
         )
 
 

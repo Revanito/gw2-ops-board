@@ -6,14 +6,21 @@
   <h2>To-Do</h2>
   <p class="section-sub">
     A personal checklist — bosses to do, things to buy, achievements to chip away at. Nobody
-    but you can see this. Optionally attach a link (a wiki page, an LFG post, whatever's useful).
+    but you can see this. Optionally attach a link (a wiki page, an LFG post, whatever's useful),
+    or link an achievement by its exact in-game name to track live progress from your account.
   </p>
 
+  {% if error %}<div class="notice error">{{ error }}</div>{% endif %}
+
   <form method="post" action="/todo/add" class="todo-add-form">
-    <input type="text" name="text" placeholder="e.g. Kill Tequatl, buy 250 Mystic Coins, progress &quot;Bounty Hunter&quot;&hellip;" required maxlength="300">
+    <input type="text" name="text" placeholder="e.g. Kill Tequatl, buy 250 Mystic Coins&hellip;" required maxlength="300">
     <input type="url" name="link" placeholder="Optional link (wiki, LFG, etc.)">
+    <input type="text" name="achievement" placeholder="Optional: exact achievement name to track">
     <button type="submit">Add</button>
   </form>
+  {% if not has_api_key %}
+    <p class="hint">Add your GW2 API key in <a href="/settings">Settings</a> to see live progress on linked achievements.</p>
+  {% endif %}
 
   {% if todos %}
   <div class="todo-list">
@@ -23,8 +30,22 @@
         <button type="submit" class="todo-check" aria-label="Toggle done">{{ "✓" if t.done else "" }}</button>
       </form>
       <div class="todo-text">
-        {{ t.text }}
-        {% if t.link %}<a href="{{ t.link }}" target="_blank" rel="noopener" class="todo-link">↗</a>{% endif %}
+        <div class="todo-text-line">
+          {{ t.text }}
+          {% if t.link %}<a href="{{ t.link }}" target="_blank" rel="noopener" class="todo-link">↗</a>{% endif %}
+        </div>
+        {% if t.achievement_id %}
+          {% if t.achievement_progress %}
+          <div class="todo-achievement">
+            <span class="dim">{{ t.achievement_progress.name }}:</span>
+            <span class="mono">{{ "{:,}".format(t.achievement_progress.current) }} / {{ "{:,}".format(t.achievement_progress.max) }}</span>
+            {% if t.achievement_progress.done %}<span class="todo-achievement-done">✓ complete</span>{% endif %}
+            <div class="todo-progress-bar"><div class="todo-progress-fill" style="width:{{ [(t.achievement_progress.current / t.achievement_progress.max * 100), 100] | min }}%"></div></div>
+          </div>
+          {% else %}
+          <div class="todo-achievement dim">Achievement linked - add your API key to see progress.</div>
+          {% endif %}
+        {% endif %}
       </div>
       <form method="post" action="/todo/{{ t.id }}/delete" class="todo-delete-form">
         <button type="submit" class="todo-delete" aria-label="Remove">✕</button>

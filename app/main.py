@@ -5,6 +5,7 @@ import secrets
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import quote
 
 from fastapi import FastAPI, Form, Request
 from fastapi.responses import RedirectResponse
@@ -360,29 +361,59 @@ async def materials(request: Request):
 
 
 @app.get("/todo")
-def todo_page(request: Request):
+async def todo_page(request: Request, error: str = ""):
     user = current_user(request)
     if not user:
         return RedirectResponse("/login")
+
+    api_key = decrypt(user["encrypted_api_key"]) if user["encrypted_api_key"] else None
+
+    todos = []
+    for row in list_todos(user["discord_id"]):
+        t = dict(row)
+        t["achievement_progress"] = None
+        if t["achievement_id"] and api_key:
+            t["achievement_progress"] = await _safe(
+                gw2_api.fetch_achievement_progress(api_key, t["achievement_id"]),
+                None, "fetch_achievement_progress", user["discord_id"],
+            )
+        todos.append(t)
+
     return templates.TemplateResponse("todo.html", {
-        "request": request, "user": user, "todos": list_todos(user["discord_id"]),
+        "request": request, "user": user, "todos": todos,
+        "has_api_key": bool(api_key), "error": error,
     })
 
 
 @app.post("/todo/add")
-def todo_add(request: Request, text: str = Form(...), link: str = Form("")):
+async def todo_add(request: Request, text: str = Form(...), link: str = Form(""), achievement: str = Form("")):
     user = current_user(request)
     if not user:
         return RedirectResponse("/login", status_code=303)
     text = text.strip()
     link = link.strip()
-    if text:
-        # Link is only ever rendered back as an <a href>, so only allow
-        # http(s) - no javascript: URLs, even though the only person who'd
-        # ever open their own to-do list is the account's own owner.
-        if link and not link.startswith(("http://", "https://")):
-            link = ""
-        add_todo(user["discord_id"], text[:300], link or None)
+    achievement = achievement.strip()
+    if not text:
+        return RedirectResponse("/todo", status_code=303)
+
+    # Link is only ever rendered back as an <a href>, so only allow
+    # http(s) - no javascript: URLs, even though the only person who'd
+    # ever open their own to-do list is the account's own owner.
+    if link and not link.startswith(("http://", "https://")):
+        link = ""
+
+    achievement_id = None
+    error = ""
+    if achievement:
+        match = await _safe(gw2_api.search_achievement(achievement), None, "search_achievement", user["discord_id"])
+        if match:
+            achievement_id = match["id"]
+        else:
+            error = f'no achievement named "{achievement}" - added without tracking'
+
+    add_todo(user["discord_id"], text[:300], link or None, achievement_id)
+    if error:
+        return RedirectResponse(f"/todo?error={quote(error)}", status_code=303)
     return RedirectResponse("/todo", status_code=303)
 
 

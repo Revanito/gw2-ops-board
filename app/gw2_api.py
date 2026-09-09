@@ -280,6 +280,81 @@ async def fetch_materials(api_key: str) -> list[dict]:
     return result
 
 
+# In-process cache of the whole achievement catalog (id/name/top-tier
+# count for every achievement in the game, ~8200 of them) - needed to
+# resolve a typed achievement name to an id for the to-do list's optional
+# achievement tracking. There's no official name-search endpoint, so this
+# fetches the full catalog once (~42 chunked calls) and caches it long-term,
+# since the catalog itself changes rarely (new content patches only).
+_achievement_cache: dict | None = None
+_achievement_cache_loaded_at = 0.0
+_ACHIEVEMENT_CACHE_TTL = 86400
+
+
+async def _load_achievement_cache() -> dict:
+    global _achievement_cache, _achievement_cache_loaded_at
+    now = time.time()
+    if _achievement_cache is not None and now - _achievement_cache_loaded_at < _ACHIEVEMENT_CACHE_TTL:
+        return _achievement_cache
+
+    ids_resp = await _client.get("/achievements")
+    ids_resp.raise_for_status()
+    all_ids = ids_resp.json()
+
+    by_name: dict[str, dict] = {}
+    by_id: dict[int, dict] = {}
+    for i in range(0, len(all_ids), 200):
+        chunk = all_ids[i:i + 200]
+        resp = await _client.get(f"/achievements?ids={','.join(map(str, chunk))}")
+        resp.raise_for_status()
+        for a in resp.json():
+            name = a.get("name")
+            if not name:
+                continue
+            tiers = a.get("tiers") or []
+            entry = {"id": a["id"], "name": name, "max": tiers[-1]["count"] if tiers else None}
+            by_name[name.lower()] = entry
+            by_id[a["id"]] = entry
+
+    _achievement_cache = {"by_name": by_name, "by_id": by_id}
+    _achievement_cache_loaded_at = now
+    return _achievement_cache
+
+
+async def search_achievement(name: str) -> dict | None:
+    """Case-insensitive exact-name lookup against the full achievement
+    catalog. Returns {"id", "name", "max"} or None if nothing matches -
+    there's no fuzzy/partial search here, the name has to match exactly
+    (as it appears in-game) since the alternative is silently linking the
+    wrong achievement."""
+    cache = await _load_achievement_cache()
+    return cache["by_name"].get(name.strip().lower())
+
+
+async def fetch_achievement_progress(api_key: str, achievement_id: int) -> dict | None:
+    """Live current/max/done for one achievement linked from the to-do
+    list. An achievement with zero progress often has no entry at all in
+    /account/achievements (rather than an entry showing 0), so "max" falls
+    back to the achievement's own top-tier threshold from the catalog
+    whenever the account has no progress entry yet."""
+    resp = await _client.get(f"/account/achievements?ids={achievement_id}", headers=_auth_headers(api_key))
+    resp.raise_for_status()
+    rows = resp.json()
+    entry = rows[0] if rows else {}
+
+    cache = await _load_achievement_cache()
+    cat_entry = cache["by_id"].get(achievement_id)
+    if cat_entry is None:
+        return None
+
+    return {
+        "name": cat_entry["name"],
+        "current": entry.get("current", 0),
+        "max": entry.get("max") or cat_entry.get("max") or 1,
+        "done": entry.get("done", False),
+    }
+
+
 async def fetch_worldbosses_looted_today(api_key: str) -> set[str]:
     """Event ids (not display names) of world bosses this account has
     already looted since the last daily reset."""
