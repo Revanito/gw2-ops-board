@@ -388,7 +388,13 @@ button.secondary, .btn.secondary { background: transparent; border: 1px solid va
 .todo-add-form input[name="achievement"] { flex: 1; min-width: 200px; margin: 0; width: auto; }
 .todo-add-form button { flex-shrink: 0; }
 
-.todo-list { display: flex; flex-direction: column; gap: 8px; max-width: 680px; margin-top: 16px; }
+.todo-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; }
+.todo-column h2 { margin-bottom: 12px; }
+@media (max-width: 860px) {
+  .todo-columns { grid-template-columns: 1fr; }
+}
+
+.todo-list { display: flex; flex-direction: column; gap: 8px; }
 .todo-item {
   display: flex; align-items: flex-start; gap: 12px;
   background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px;
