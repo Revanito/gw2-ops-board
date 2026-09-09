@@ -30,9 +30,16 @@ def _wiki_url(name: str) -> str:
     return "https://wiki.guildwars2.com/wiki/" + name.replace(" ", "_")
 
 
-async def fetch_gemstore_schedule() -> list[dict]:
-    """Returns every schedule entry currently on sale/available, each as
-    {"name", "icon", "wiki_url", "start", "end", "indefinite", "category_name"}."""
+async def fetch_gemstore_data() -> dict:
+    """Returns {"active": [...], "catalog": {name_lower: {...}}}.
+
+    "active" is every schedule entry currently on sale/available, each as
+    {"name", "icon", "wiki_url", "start", "end", "indefinite", "category_name"}.
+
+    "catalog" is base info (name/icon/wiki_url) for *every* item thatshaman
+    tracks, active or not - needed so the favorites list can still show an
+    item (greyed out) when it isn't currently on sale, instead of the item
+    just disappearing from the page entirely."""
     async with httpx.AsyncClient(timeout=20) as client:
         resp = await client.get(GEMSTORE_JSON_URL)
         resp.raise_for_status()
@@ -41,6 +48,17 @@ async def fetch_gemstore_schedule() -> list[dict]:
     items = data.get("items", {})
     categories = data.get("categories", {})
     now = datetime.now(timezone.utc)
+
+    catalog = {}
+    for item in items.values():
+        name = item.get("name")
+        if not name:
+            continue
+        catalog[name.lower()] = {
+            "name": name,
+            "icon": ICON_BASE + item["image"] + "_large.png" if item.get("image") else None,
+            "wiki_url": _wiki_url(name),
+        }
 
     active = []
     for entry in data.get("schedule", []):
@@ -69,15 +87,30 @@ async def fetch_gemstore_schedule() -> list[dict]:
         })
 
     active.sort(key=lambda e: e["name"].lower())
-    return active
+    return {"active": active, "catalog": catalog}
 
 
-def match_favorites(active_schedule: list[dict], favorites: list[str]) -> list[dict]:
-    """Cross-references the currently-active gem store entries against a
-    favorites list of item names (case-insensitive substring-free exact
-    match on name), returning just the matches."""
-    wanted = {name.lower() for name in favorites}
-    return [entry for entry in active_schedule if entry["name"].lower() in wanted]
+def build_favorites_view(data: dict, favorites: list[str]) -> list[dict]:
+    """One entry per name in favorites.json, in that order - always shown,
+    not just when on sale. An entry currently on sale carries the live
+    schedule info and "available": True; one that isn't still shows its
+    name/icon (from the full catalog) with "available": False so the
+    template can grey it out instead of hiding it. A name thatshaman
+    doesn't track at all (typo, or genuinely never listed) still gets a
+    bare entry rather than silently vanishing."""
+    active_by_name = {e["name"].lower(): e for e in data["active"]}
+    catalog = data["catalog"]
+
+    result = []
+    for name in favorites:
+        key = name.lower()
+        active_entry = active_by_name.get(key)
+        if active_entry:
+            result.append({**active_entry, "available": True})
+            continue
+        base = catalog.get(key, {"name": name, "icon": None, "wiki_url": _wiki_url(name)})
+        result.append({**base, "available": False, "price": None, "end": None, "indefinite": False})
+    return result
 
 
 def filter_by_category(active_schedule: list[dict], category_name: str) -> list[dict]:

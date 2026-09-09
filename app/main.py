@@ -55,14 +55,15 @@ def _load_json_list(path: Path, key: str) -> list:
 async def refresh_public_data() -> None:
     try:
         favorite_names = _load_json_list(CONFIG_DIR / "favorites.json", "items")
-        active = await gemstore_client.fetch_gemstore_schedule()
+        data = await gemstore_client.fetch_gemstore_data()
 
-        matches = gemstore_client.match_favorites(active, favorite_names)
-        for entry in matches:
-            entry["price"] = await wiki_client.fetch_gem_price(entry["name"])
-        public_cache["gemstore_favorites"] = matches
+        favorites_view = gemstore_client.build_favorites_view(data, favorite_names)
+        for entry in favorites_view:
+            if entry["available"]:
+                entry["price"] = await wiki_client.fetch_gem_price(entry["name"])
+        public_cache["gemstore_favorites"] = favorites_view
 
-        promotions = gemstore_client.filter_by_category(active, PROMOTIONS_CATEGORY)
+        promotions = gemstore_client.filter_by_category(data["active"], PROMOTIONS_CATEGORY)
         for entry in promotions:
             entry["price"] = await wiki_client.fetch_gem_price(entry["name"])
         public_cache["gemstore_promotions"] = promotions

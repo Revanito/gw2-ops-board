@@ -152,9 +152,9 @@ td.dim { color: var(--text-dim); }
   background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
   padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;
 }
-.exchange-row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 0.84rem; }
-.exchange-label { color: var(--text-dim); }
-.exchange-value { font-weight: 700; white-space: nowrap; }
+.exchange-line { display: flex; align-items: center; flex-wrap: wrap; gap: 5px; font-size: 0.86rem; color: var(--text-dim); }
+.exchange-icon { width: 18px; height: 18px; vertical-align: middle; }
+.exchange-value { font-weight: 700; white-space: nowrap; color: var(--text); }
 
 .gem-list { display: flex; flex-direction: column; gap: 10px; }
 .gem-item {
@@ -164,7 +164,13 @@ td.dim { color: var(--text-dim); }
 }
 .gem-item img { width: 32px; height: 32px; border-radius: 6px; flex-shrink: 0; object-fit: cover; }
 .gem-item .gi-text { min-width: 0; }
-.gem-item .gi-name { font-weight: 600; font-size: 0.84rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gem-item .gi-name {
+  font-weight: 600; font-size: 0.84rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  color: var(--accent-dim);
+}
+.gem-item.unavailable { opacity: 0.45; }
+.gem-item.unavailable img { filter: grayscale(1); }
+.gem-item.unavailable .gi-name { color: var(--text); }
 .gem-item .gi-desc { color: var(--text-dim); font-size: 0.74rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 @media (max-width: 860px) {

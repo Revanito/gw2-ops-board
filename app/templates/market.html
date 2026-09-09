@@ -49,13 +49,17 @@
       <h2>Gem Exchange</h2>
       {% if gem_exchange %}
       <div class="exchange-box">
-        <div class="exchange-row">
-          <span class="exchange-label">Sell {{ gem_exchange.sell_gems }} gems for</span>
-          <span class="exchange-value mono">{{ gem_exchange.sell_coins | coins }}</span>
+        <div class="exchange-line">
+          Sell {{ gem_exchange.sell_gems }}
+          {% if gem_exchange.gem_icon %}<img src="{{ gem_exchange.gem_icon }}" alt="gems" class="exchange-icon">{% endif %}
+          for <span class="exchange-value mono">{{ gem_exchange.sell_gems_for_coins | coins }}</span>
+          {% if gem_exchange.gold_icon %}<img src="{{ gem_exchange.gold_icon }}" alt="gold" class="exchange-icon">{% endif %}
         </div>
-        <div class="exchange-row">
-          <span class="exchange-label">Buy gems with {{ (gem_exchange.buy_coins / 10000) | round | int }}g for</span>
-          <span class="exchange-value mono">{{ "{:,}".format(gem_exchange.buy_gems) }} gems</span>
+        <div class="exchange-line">
+          Sell {{ (gem_exchange.sell_gold_coins / 10000) | round | int }}
+          {% if gem_exchange.gold_icon %}<img src="{{ gem_exchange.gold_icon }}" alt="gold" class="exchange-icon">{% endif %}
+          for <span class="exchange-value mono">{{ "{:,}".format(gem_exchange.sell_gold_for_gems) }}</span>
+          {% if gem_exchange.gem_icon %}<img src="{{ gem_exchange.gem_icon }}" alt="gems" class="exchange-icon">{% endif %}
         </div>
       </div>
       <p class="hint" style="margin-top:8px">Live rates from the official Exchange - larger trades get worse rates (real slippage), so these reflect a realistic trade size rather than a flat per-gem price.</p>
@@ -64,21 +68,25 @@
       {% endif %}
 
       <h2 style="margin-top:28px">Gemstore Favorites</h2>
-      <p class="section-sub">On sale now, cross-referenced against favorites.json, captured live from thatshaman.com's feed:</p>
+      <p class="section-sub">Your wishlist (favorites.json) - greyed out unless currently on sale, captured live from thatshaman.com's feed:</p>
       {% if gemstore_favorites %}
       <div class="gem-list">
         {% for item in gemstore_favorites %}
-        <a class="gem-item" href="{{ item.wiki_url }}" target="_blank" rel="noopener">
+        <a class="gem-item{{ '' if item.available else ' unavailable' }}" href="{{ item.wiki_url }}" target="_blank" rel="noopener">
           {% if item.icon %}<img src="{{ item.icon }}" alt="">{% endif %}
           <div class="gi-text">
             <div class="gi-name">{{ item.name }}</div>
+            {% if item.available %}
             <div class="gi-desc">{{ item.price or "?" }} · {{ "always available" if item.indefinite else "until " + item.end[:10] }}</div>
+            {% else %}
+            <div class="gi-desc">Not currently available</div>
+            {% endif %}
           </div>
         </a>
         {% endfor %}
       </div>
       {% else %}
-        <p class="dim">None of your favorites (favorites.json) are on sale right now.</p>
+        <p class="dim">No favorites yet - add item names to favorites.json.</p>
       {% endif %}
 
       <h2 style="margin-top:28px">Gemstore Promotions</h2>

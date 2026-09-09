@@ -292,21 +292,29 @@ async def fetch_gem_exchange() -> dict | None:
     """Public, no key needed. Live gold<->gem exchange rates, for a
     representative quantity each direction rather than an abstract per-unit
     rate - 400 gems (the size of the smallest real-money gem purchase) for
-    selling, and 100 gold for buying, so the numbers reflect something a
-    player would actually consider doing. The Exchange has real slippage at
-    volume, so "coins per gem" differs slightly between the two calls."""
+    selling gems, and 100 gold for selling gold (i.e. buying gems), so the
+    numbers reflect something a player would actually consider doing. The
+    Exchange has real slippage at volume, so "coins per gem" differs
+    slightly between the two calls. Currency icons come along for the ride
+    so the UI can show the real Gold/Gem icons rather than text labels."""
     try:
-        sell_resp = await _client.get("/commerce/exchange/gems?quantity=400")
-        sell_resp.raise_for_status()
-        buy_resp = await _client.get("/commerce/exchange/coins?quantity=1000000")
-        buy_resp.raise_for_status()
+        sell_gems_resp = await _client.get("/commerce/exchange/gems?quantity=400")
+        sell_gems_resp.raise_for_status()
+        sell_gold_resp = await _client.get("/commerce/exchange/coins?quantity=1000000")
+        sell_gold_resp.raise_for_status()
     except httpx.HTTPStatusError:
         return None
+
+    currencies = await _get_ref("/currencies?ids=1,4", ttl=86400)
+    icons = {c["id"]: c.get("icon") for c in currencies}
+
     return {
         "sell_gems": 400,
-        "sell_coins": sell_resp.json()["quantity"],
-        "buy_coins": 1000000,
-        "buy_gems": buy_resp.json()["quantity"],
+        "sell_gems_for_coins": sell_gems_resp.json()["quantity"],
+        "sell_gold_coins": 1000000,
+        "sell_gold_for_gems": sell_gold_resp.json()["quantity"],
+        "gold_icon": icons.get(1),
+        "gem_icon": icons.get(4),
     }
 
 
