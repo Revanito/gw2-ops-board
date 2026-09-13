@@ -177,10 +177,11 @@ td.dim { color: var(--text-dim); }
 
 .gem-list { display: flex; flex-direction: column; gap: 10px; }
 .gem-item {
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 6px;
   background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px;
   padding: 8px 12px;
 }
+.gem-item .gi-link { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; text-decoration: none; }
 .gem-item img { width: 32px; height: 32px; border-radius: 6px; flex-shrink: 0; object-fit: cover; }
 .gem-item .gi-text { min-width: 0; }
 .gem-item .gi-name {
@@ -191,6 +192,10 @@ td.dim { color: var(--text-dim); }
 .gem-item.unavailable img { filter: grayscale(1); }
 .gem-item.unavailable .gi-name { color: var(--text); }
 .gem-item .gi-desc { color: var(--text-dim); font-size: 0.74rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.favorite-add-form { display: flex; gap: 8px; margin-bottom: 14px; }
+.favorite-add-form input[type="text"] { flex: 1; margin: 0; min-width: 0; }
+.favorite-add-form button { flex-shrink: 0; }
 
 @media (max-width: 860px) {
   .market-layout { flex-direction: column; }

@@ -23,8 +23,9 @@ import wiki_client
 from config import settings
 from crypto import decrypt, encrypt
 from db import (
-    add_todo, clear_api_key, delete_todo, get_gem_exchange_history, get_user,
-    init_db, list_todos, record_gem_exchange_sample, set_api_key, toggle_todo,
+    add_favorite, add_todo, clear_api_key, delete_todo, get_gem_exchange_history,
+    get_user, init_db, list_all_favorite_names, list_favorites, list_todos,
+    record_gem_exchange_sample, remove_favorite, set_api_key, toggle_todo,
     upsert_user,
 )
 
@@ -36,8 +37,9 @@ log = logging.getLogger("gw2-ops-board")
 CONFIG_DIR = Path(__file__).parent
 
 public_cache: dict = {
-    "gemstore_favorites": [], "gemstore_promotions": [], "watchlist": [], "updated_at": None,
-    "items_to_flip": [], "flip_updated_at": None, "gem_exchange": None,
+    "gemstore_favorites_guest": [], "favorite_item_info": {}, "gemstore_promotions": [],
+    "watchlist": [], "updated_at": None, "items_to_flip": [], "flip_updated_at": None,
+    "gem_exchange": None,
 }
 
 # thatshaman's own rotating single-item promotional showcase - independent
@@ -56,11 +58,18 @@ def _load_json_list(path: Path, key: str) -> list:
 
 async def refresh_public_data() -> None:
     try:
-        favorite_names = _load_json_list(CONFIG_DIR / "favorites.json", "items")
-        data = await gemstore_client.fetch_gemstore_data()
+        guest_names = _load_json_list(CONFIG_DIR / "favorites.json", "items")
+        # Every name anyone has favorited, guest defaults included, gets its
+        # price/icon looked up exactly once here in the background - never
+        # per-request, so a logged-in user's personalized Market page never
+        # has to wait on a live wiki fetch (same "don't do slow bulk work
+        # inline in a request" lesson as the achievement cache).
+        personal_names = list_all_favorite_names()
+        all_names = sorted({*guest_names, *personal_names}, key=str.lower)
 
-        favorites_view = gemstore_client.build_favorites_view(data, favorite_names)
-        for entry in favorites_view:
+        data = await gemstore_client.fetch_gemstore_data()
+        info_by_name = {}
+        for entry in gemstore_client.build_favorites_view(data, all_names):
             if entry["available"]:
                 entry["price"] = await wiki_client.fetch_gem_price(entry["name"])
             elif not entry["icon"]:
@@ -69,7 +78,11 @@ async def refresh_public_data() -> None:
                 # sold as its own listing - so fall back to the wiki's own
                 # infobox image instead of showing no icon.
                 entry["icon"] = await wiki_client.fetch_page_thumbnail(entry["name"])
-        public_cache["gemstore_favorites"] = favorites_view
+            info_by_name[entry["name"].lower()] = entry
+        public_cache["favorite_item_info"] = info_by_name
+        public_cache["gemstore_favorites_guest"] = [
+            info_by_name[name.lower()] for name in guest_names if name.lower() in info_by_name
+        ]
 
         promotions = gemstore_client.filter_by_category(data["active"], PROMOTIONS_CATEGORY)
         for entry in promotions:
@@ -244,12 +257,33 @@ def index(request: Request):
     })
 
 
+def _personal_favorites_view(discord_id: str) -> list[dict]:
+    info = public_cache["favorite_item_info"]
+    view = []
+    for row in list_favorites(discord_id):
+        entry = info.get(row["item_name"].lower())
+        if not entry:
+            # Just added - the shared cache only refreshes every
+            # settings.refresh_interval_minutes, so show a bare pending entry
+            # rather than doing a live wiki fetch during this request.
+            entry = {
+                "name": row["item_name"], "icon": None,
+                "wiki_url": gemstore_client.wiki_url(row["item_name"]),
+                "available": False, "price": None, "end": None, "indefinite": False,
+            }
+        view.append({**entry, "favorite_id": row["id"]})
+    return view
+
+
 @app.get("/market")
 def market(request: Request):
+    user = current_user(request)
+    gemstore_favorites = _personal_favorites_view(user["discord_id"]) if user \
+        else public_cache["gemstore_favorites_guest"]
     return templates.TemplateResponse("market.html", {
         "request": request,
-        "user": current_user(request),
-        "gemstore_favorites": public_cache["gemstore_favorites"],
+        "user": user,
+        "gemstore_favorites": gemstore_favorites,
         "gemstore_promotions": public_cache["gemstore_promotions"],
         "gem_exchange": public_cache["gem_exchange"],
         "watchlist": public_cache["watchlist"],
@@ -257,6 +291,26 @@ def market(request: Request):
         "updated_at": public_cache["updated_at"],
         "flip_updated_at": public_cache["flip_updated_at"],
     })
+
+
+@app.post("/market/favorites/add")
+def favorite_add(request: Request, item: str = Form(...)):
+    user = current_user(request)
+    if not user:
+        return RedirectResponse("/login", status_code=303)
+    item = item.strip()
+    if item:
+        add_favorite(user["discord_id"], item[:200])
+    return RedirectResponse("/market", status_code=303)
+
+
+@app.post("/market/favorites/{favorite_id}/delete")
+def favorite_delete(request: Request, favorite_id: int):
+    user = current_user(request)
+    if not user:
+        return RedirectResponse("/login", status_code=303)
+    remove_favorite(user["discord_id"], favorite_id)
+    return RedirectResponse("/market", status_code=303)
 
 
 @app.get("/market/gem-exchange-history")

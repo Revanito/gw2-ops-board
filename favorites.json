@@ -1,19 +1,8 @@
 {
-  "_comment": "Gem store item names to watch for. Must match the item's exact wiki page name (spaces, capitalization). Cross-referenced against thatshaman.com's live rotation feed every refresh cycle.",
+  "_comment": "Default gemstore watchlist shown to logged-out visitors only. Logged-in users get their own personal list instead (stored in the DB, editable from the Market page). Names must match the item's exact wiki page name.",
   "items": [
-    "Wandering Weapon Master Outfit",
-    "Home Instance Node Pack",
-    "Home Instance Contract Pack",
     "Copper-Fed Salvage-o-Matic",
     "Shared Inventory Slot",
-    "Infinite Skyscale Gathering Tools",
-    "Infinite Herald of Aurene Gathering Tools",
-    "Infinite Holy Barrage Gathering Tools",
-    "Infinite Metal Legion Gathering Tools",
-    "Grand Lion Griffon Skin",
-    "Irascible Noble Skyscale",
-    "Regal Moth Skyscale Skin",
-    "Floating Garden Skiff Skin",
-    "Vermilion Wings Backpack"
+    "Home Instance Node Pack"
   ]
 }

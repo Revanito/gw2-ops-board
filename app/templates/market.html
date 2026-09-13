@@ -83,25 +83,40 @@
       {% endif %}
 
       <h2 style="margin-top:28px">Gemstore Favorites</h2>
-      <p class="section-sub">Your wishlist (favorites.json) - greyed out unless currently on sale, captured live from thatshaman.com's feed:</p>
+      {% if user %}
+      <p class="section-sub">Your personal wishlist - greyed out unless currently on sale, captured live from thatshaman.com's feed. Add an item by its exact wiki page name:</p>
+      <form method="post" action="/market/favorites/add" class="favorite-add-form">
+        <input type="text" name="item" placeholder="e.g. Mist Anomaly Skyscale Skin" required maxlength="200">
+        <button type="submit">Add</button>
+      </form>
+      {% else %}
+      <p class="section-sub">A few defaults for logged-out visitors, greyed out unless currently on sale. Want to bookmark your own items to see when they're on sale? <a href="/login">Log in with Discord</a> to build your own list.</p>
+      {% endif %}
       {% if gemstore_favorites %}
       <div class="gem-list">
         {% for item in gemstore_favorites %}
-        <a class="gem-item{{ '' if item.available else ' unavailable' }}" href="{{ item.wiki_url }}" target="_blank" rel="noopener">
-          {% if item.icon %}<img src="{{ item.icon }}" alt="">{% endif %}
-          <div class="gi-text">
-            <div class="gi-name">{{ item.name }}</div>
-            {% if item.available %}
-            <div class="gi-desc">{{ item.price or "?" }} · {{ "always available" if item.indefinite else "until " + item.end[:10] }}</div>
-            {% else %}
-            <div class="gi-desc">Not currently available</div>
-            {% endif %}
-          </div>
-        </a>
+        <div class="gem-item{{ '' if item.available else ' unavailable' }}">
+          <a class="gi-link" href="{{ item.wiki_url }}" target="_blank" rel="noopener">
+            {% if item.icon %}<img src="{{ item.icon }}" alt="">{% endif %}
+            <div class="gi-text">
+              <div class="gi-name">{{ item.name }}</div>
+              {% if item.available %}
+              <div class="gi-desc">{{ item.price or "?" }} · {{ "always available" if item.indefinite else "until " + item.end[:10] }}</div>
+              {% else %}
+              <div class="gi-desc">Not currently available</div>
+              {% endif %}
+            </div>
+          </a>
+          {% if item.favorite_id %}
+          <form method="post" action="/market/favorites/{{ item.favorite_id }}/delete" class="todo-delete-form">
+            <button type="submit" class="todo-delete" aria-label="Remove favorite">✕</button>
+          </form>
+          {% endif %}
+        </div>
         {% endfor %}
       </div>
       {% else %}
-        <p class="dim">No favorites yet - add item names to favorites.json.</p>
+        <p class="dim">{{ "No favorites yet - add an item above." if user else "No default favorites configured." }}</p>
       {% endif %}
 
       <h2 style="margin-top:28px">Gemstore Promotions</h2>

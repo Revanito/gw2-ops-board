@@ -26,7 +26,7 @@ ICON_BASE = "https://services.staticwars.com/gw2/img/content/"
 _INDEFINITE_YEAR = 2050
 
 
-def _wiki_url(name: str) -> str:
+def wiki_url(name: str) -> str:
     return "https://wiki.guildwars2.com/wiki/" + name.replace(" ", "_")
 
 
@@ -57,7 +57,7 @@ async def fetch_gemstore_data() -> dict:
         catalog[name.lower()] = {
             "name": name,
             "icon": ICON_BASE + item["image"] + "_large.png" if item.get("image") else None,
-            "wiki_url": _wiki_url(name),
+            "wiki_url": wiki_url(name),
         }
 
     active = []
@@ -79,7 +79,7 @@ async def fetch_gemstore_data() -> dict:
         active.append({
             "name": item["name"],
             "icon": ICON_BASE + item["image"] + "_large.png" if item.get("image") else None,
-            "wiki_url": _wiki_url(item["name"]),
+            "wiki_url": wiki_url(item["name"]),
             "start": start.isoformat(),
             "end": None if indefinite else end.isoformat(),
             "indefinite": indefinite,
@@ -108,7 +108,7 @@ def build_favorites_view(data: dict, favorites: list[str]) -> list[dict]:
         if active_entry:
             result.append({**active_entry, "available": True})
             continue
-        base = catalog.get(key, {"name": name, "icon": None, "wiki_url": _wiki_url(name)})
+        base = catalog.get(key, {"name": name, "icon": None, "wiki_url": wiki_url(name)})
         result.append({**base, "available": False, "price": None, "end": None, "indefinite": False})
     return result
 
