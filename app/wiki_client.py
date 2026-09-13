@@ -66,3 +66,37 @@ async def fetch_gem_price(item_name: str) -> str | None:
                 unit = currency_link["title"] if currency_link else "Gems"
                 return f"{amount} {unit}"
     return None
+
+
+async def fetch_page_thumbnail(item_name: str) -> str | None:
+    """Fallback icon for favorites thatshaman's rotation catalog doesn't carry
+    at all - mainly skins only obtainable through a license/lootbox pack
+    (e.g. Irascible Noble Skyscale via the Tenacious Creatures Mount Adoption
+    License) rather than sold as their own gemstore listing, so they can
+    never show up in gemstore_client's catalog. Uses MediaWiki's own
+    pageimages API (the page's infobox image) rather than scraping HTML -
+    a photo-style thumbnail rather than a clean square icon, but far better
+    than no image at all. None if the page has no image or doesn't exist."""
+    page = item_name.replace(" ", "_")
+    try:
+        async with httpx.AsyncClient(timeout=15) as client:
+            resp = await client.get(
+                WIKI_API,
+                params={
+                    "action": "query", "titles": page, "prop": "pageimages",
+                    "format": "json", "pithumbsize": 200,
+                },
+                headers={"User-Agent": WIKI_UA},
+            )
+            resp.raise_for_status()
+            payload = resp.json()
+    except httpx.HTTPError:
+        log.exception("wiki thumbnail fetch failed for %s", item_name)
+        return None
+
+    pages = payload.get("query", {}).get("pages", {})
+    for page_data in pages.values():
+        thumbnail = page_data.get("thumbnail", {})
+        if thumbnail.get("source"):
+            return thumbnail["source"]
+    return None

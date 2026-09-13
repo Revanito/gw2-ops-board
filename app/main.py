@@ -63,6 +63,12 @@ async def refresh_public_data() -> None:
         for entry in favorites_view:
             if entry["available"]:
                 entry["price"] = await wiki_client.fetch_gem_price(entry["name"])
+            elif not entry["icon"]:
+                # thatshaman's catalog doesn't carry this item at all - usually
+                # a skin only obtainable via a license/lootbox pack rather than
+                # sold as its own listing - so fall back to the wiki's own
+                # infobox image instead of showing no icon.
+                entry["icon"] = await wiki_client.fetch_page_thumbnail(entry["name"])
         public_cache["gemstore_favorites"] = favorites_view
 
         promotions = gemstore_client.filter_by_category(data["active"], PROMOTIONS_CATEGORY)
