@@ -8,40 +8,115 @@
   {% if error %}<div class="notice error">{{ error }}</div>{% endif %}
   {% if success %}<div class="notice success">{{ "Key removed." if success == "removed" else "Saved." }}</div>{% endif %}
 
-  <div class="panel">
-    <p class="hint">
-      Create a key at
-      <a href="https://account.arena.net/applications" target="_blank" rel="noopener">account.arena.net/applications</a>
-      with exactly these permissions checked:
-      <strong>account, wallet, progression, unlocks, characters, builds, inventories</strong>.
-      Nothing else is needed, and the GW2 API is read-only end to end &mdash; it has no endpoint
-      that can move items, spend currency, or otherwise act on your account, so this key can only
-      let this site <em>display</em> your account info (including your character list, current
-      builds, and Material Storage), never touch it.
-    </p>
-    <p class="hint">
-      Your key is encrypted at rest, not stored in plain text &mdash; but that encryption is
-      reversible (the site has to decrypt it to make API calls on your behalf), so whoever runs
-      this server technically holds the means to decrypt it, same as any self-hosted tool
-      without end-to-end encryption. What that could expose: your wallet, characters/gear,
-      achievements, account unlocks, and Material Storage. What no one can ever do with it,
-      regardless of who holds the key: act on your account in any way &mdash; there's no way to
-      spend your gold, trade or move your items, send mail, or anything else, because (as above)
-      the GW2 API itself has no endpoint capable of any of that.
-    </p>
+  <div class="settings-layout">
+    <div class="settings-col">
+      <div class="panel">
+        <p class="hint">
+          Create a key at
+          <a href="https://account.arena.net/applications" target="_blank" rel="noopener">account.arena.net/applications</a>
+          with exactly these permissions checked:
+          <strong>account, wallet, progression, unlocks, characters, builds, inventories</strong>.
+          Nothing else is needed, and the GW2 API is read-only end to end &mdash; it has no endpoint
+          that can move items, spend currency, or otherwise act on your account, so this key can only
+          let this site <em>display</em> your account info, never touch it. See exactly what each
+          permission is for on the right.
+        </p>
+      </div>
 
-    {% if user["encrypted_api_key"] %}
-      <p>Key saved &mdash; added {{ user["api_key_added_at"][:10] }}. <code>••••••••••••••••</code></p>
-      <form method="post" action="/settings/api-key/delete">
-        <button type="submit" class="secondary">Remove key</button>
-      </form>
-    {% else %}
-      <form method="post" action="/settings/api-key">
-        <label for="api_key">API key</label>
-        <input type="text" id="api_key" name="api_key" placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXXXXXXXXXX-XXXX..." required>
-        <button type="submit">Save key</button>
-      </form>
-    {% endif %}
+      <div class="panel disclaimer-box">
+        <span class="label">Disclaimer</span>
+        <p class="hint">
+          Your key is encrypted at rest, not stored in plain text &mdash; but that encryption is
+          reversible (the site has to decrypt it to make API calls on your behalf), so whoever runs
+          this server technically holds the means to decrypt it, same as any self-hosted tool
+          without end-to-end encryption. What no one can ever do with it, regardless of who holds
+          the key: act on your account in any way &mdash; there's no way to spend your gold, trade
+          or move your items, send mail, or anything else, because the GW2 API itself has no
+          endpoint capable of any of that.
+        </p>
+      </div>
+
+      <div class="panel">
+        {% if user["encrypted_api_key"] %}
+          <p>Key saved &mdash; added {{ user["api_key_added_at"][:10] }}. <code>••••••••••••••••</code></p>
+          <form method="post" action="/settings/api-key/delete">
+            <button type="submit" class="secondary">Remove key</button>
+          </form>
+        {% else %}
+          <form method="post" action="/settings/api-key">
+            <label for="api_key">API key</label>
+            <input type="text" id="api_key" name="api_key" placeholder="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXXXXXXXXXX-XXXX..." required>
+            <button type="submit">Save key</button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="settings-col">
+      <div class="panel">
+        <div class="perm-list">
+          <div class="perm-row">
+            <span class="perm-name mono">account</span>
+            <div class="perm-body">
+              <p>Your account name, ID, and creation date.</p>
+              <p class="perm-used"><strong>Used here for:</strong> the account summary on your Dashboard.</p>
+            </div>
+          </div>
+
+          <div class="perm-row">
+            <span class="perm-name mono">wallet</span>
+            <div class="perm-body">
+              <p>How much of each currency you have &mdash; gold, gems, karma, laurels, and the rest.</p>
+              <p class="perm-used"><strong>Used here for:</strong> the Wallet section on your Dashboard.</p>
+            </div>
+          </div>
+
+          <div class="perm-row">
+            <span class="perm-name mono">progression</span>
+            <div class="perm-body">
+              <p>Your achievements, story progress, and general PvE completion.</p>
+              <p class="perm-used"><strong>Used here for:</strong> Wizard's Vault daily objectives,
+                and live achievement progress on your To-Do list.</p>
+            </div>
+          </div>
+
+          <div class="perm-row planned">
+            <span class="perm-name mono">unlocks<span class="flag">planned</span></span>
+            <div class="perm-body">
+              <p>Which skins and dyes you've unlocked account-wide.</p>
+              <p class="perm-used">Work in progress &mdash; not built yet, planned for a future
+                feature. Doesn't do anything on this site today, but worth keeping checked if you
+                don't want to come back and re-grant it later.</p>
+            </div>
+          </div>
+
+          <div class="perm-row">
+            <span class="perm-name mono">characters</span>
+            <div class="perm-body">
+              <p>Your character list &mdash; name, race, profession, level, crafting disciplines.</p>
+              <p class="perm-used"><strong>Used here for:</strong> the Characters page.</p>
+            </div>
+          </div>
+
+          <div class="perm-row">
+            <span class="perm-name mono">builds</span>
+            <div class="perm-body">
+              <p>Each character's currently equipped specializations, traits, and skills.</p>
+              <p class="perm-used"><strong>Used here for:</strong> showing each character's elite
+                specialization on the Characters page.</p>
+            </div>
+          </div>
+
+          <div class="perm-row">
+            <span class="perm-name mono">inventories</span>
+            <div class="perm-body">
+              <p>Your account bank, material storage, and character inventories.</p>
+              <p class="perm-used"><strong>Used here for:</strong> the Materials page.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </section>
 
