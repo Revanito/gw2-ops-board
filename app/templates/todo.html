@@ -71,12 +71,16 @@
 
   {% if error %}<div class="notice error">{{ error }}</div>{% endif %}
 
-  <form method="post" action="/todo/add" class="todo-add-form">
-    <input type="text" name="text" placeholder="e.g. Kill Tequatl, buy 250 Mystic Coins&hellip;" required maxlength="300">
-    <input type="url" name="link" placeholder="Optional link (wiki, LFG, etc.)">
-    <input type="text" name="achievement" placeholder="Optional: exact achievement name to track">
-    <button type="submit">Add</button>
-  </form>
+  <div class="wide-bleed">
+    <div class="wide-content">
+      <form method="post" action="/todo/add" class="todo-add-form">
+        <input type="text" name="text" placeholder="e.g. Kill Tequatl, buy 250 Mystic Coins&hellip;" required maxlength="300">
+        <input type="url" name="link" placeholder="Optional link (wiki, LFG, etc.)">
+        <input type="text" name="achievement" placeholder="Optional: exact achievement name to track">
+        <button type="submit">Add</button>
+      </form>
+    </div>
+  </div>
   {% if not has_api_key %}
     <p class="hint">Add your GW2 API key in <a href="/settings">Settings</a> to see live progress on linked achievements.</p>
   {% endif %}
