@@ -19,6 +19,16 @@
       let this site <em>display</em> your account info (including your character list, current
       builds, and Material Storage), never touch it.
     </p>
+    <p class="hint">
+      Your key is encrypted at rest, not stored in plain text &mdash; but that encryption is
+      reversible (the site has to decrypt it to make API calls on your behalf), so whoever runs
+      this server technically holds the means to decrypt it, same as any self-hosted tool
+      without end-to-end encryption. What that could expose: your wallet, characters/gear,
+      achievements, account unlocks, and Material Storage. What no one can ever do with it,
+      regardless of who holds the key: act on your account in any way &mdash; there's no way to
+      spend your gold, trade or move your items, send mail, or anything else, because (as above)
+      the GW2 API itself has no endpoint capable of any of that.
+    </p>
 
     {% if user["encrypted_api_key"] %}
       <p>Key saved &mdash; added {{ user["api_key_added_at"][:10] }}. <code>••••••••••••••••</code></p>
